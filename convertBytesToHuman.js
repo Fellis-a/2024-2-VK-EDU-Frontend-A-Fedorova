@@ -14,7 +14,7 @@
 
 export default function convertBytesToHuman(bytes) {
 
-  if (typeof bytes !== 'number' || bytes < 0) {
+  if (typeof bytes !== 'number' || bytes < 0 || isNaN(bytes)) {
     return false;
   }
 
@@ -29,6 +29,6 @@ export default function convertBytesToHuman(bytes) {
     i++;
   }
 
-  return Number.isInteger(bytes) ? bytes + ' ' + sizes[i] : bytes.toFixed(2) + ' ' + sizes[i];
+  return (Number.isInteger(bytes) ? bytes : bytes.toFixed(2)) + ' ' + sizes[i];
 }
 
