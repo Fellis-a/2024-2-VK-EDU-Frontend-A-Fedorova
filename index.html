@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Send a message</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link href="style.css" rel="stylesheet"></head>
+
+<body>
+    <div class="chat">
+        <header class="chat__header">
+            <div class="chat__actions">
+                <a href="/" class="chat__btn-back">
+                    <span class="material-symbols-outlined">arrow_back_ios</span>
+                </a>
+                <img src="https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg" alt="Аватарка"
+                    class="chat__avatar">
+                <div class="chat__info">
+                    <h1 class="chat__name">Алиса</h1>
+                    <p class="chat__status">была недавно</p>
+                </div>
+            </div>
+            <div class="chat__controls">
+                <a href="/"><span class="material-symbols-outlined">search</span></a>
+                <a href="/"><span class="material-symbols-outlined">more_vert</span></a>
+            </div>
+        </header>
+
+        <section class="chat__messages">
+            <div class="message"></div>
+        </section>
+
+
+        <form class="chat__input-form" action="/">
+            <button class="chat__btn-attach">+</button>
+            <input type="text" class="chat__input" placeholder="Enter your message" required>
+            <button type="submit" class="chat__btn-send">
+                <span class="material-symbols-outlined">arrow_upward</span>
+            </button>
+        </form>
+    </div>
+<script type="text/javascript" src="bundle.js"></script></body>
+
+</html>
