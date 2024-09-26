@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Send a message</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +19,9 @@
     <div class="chat">
         <header class="chat__header">
             <div class="chat__actions">
-                <a href="/" class="chat__btn-back">
+                <button>
                     <span class="material-symbols-outlined">arrow_back_ios</span>
-                </a>
+                </button>
                 <img src="https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg" alt="Аватарка"
                     class="chat__avatar">
                 <div class="chat__info">
@@ -29,8 +30,8 @@
                 </div>
             </div>
             <div class="chat__controls">
-                <a href="/"><span class="material-symbols-outlined">search</span></a>
-                <a href="/"><span class="material-symbols-outlined">more_vert</span></a>
+                <button><span class="material-symbols-outlined">search</span></button>
+                <button><span class="material-symbols-outlined">more_vert</span></button>
             </div>
         </header>
 
@@ -39,7 +40,7 @@
         </section>
 
 
-        <form class="chat__input-form" action="/">
+        <form class="chat__input-form">
             <button class="chat__btn-attach">+</button>
             <input type="text" class="chat__input" placeholder="Enter your message" required>
             <button type="submit" class="chat__btn-send">
