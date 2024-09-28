@@ -3,19 +3,23 @@ import './index.css';
 const form = document.querySelector('form');
 const input = document.querySelector('.chat__input');
 const message = document.querySelector('.chat__messages');
+const MESSAGES_KEY = 'messages';
+
+form.addEventListener('submit', handleSubmit);
+// form.addEventListener('keypress', handleKeyPress);
 
 const currentUser = 'Я';
 const otherUser = 'Друг';
 
 function getMessages() {
-    let messages = localStorage.getItem('messages');
+    let messages = localStorage.getItem(MESSAGES_KEY);
     if (messages) {
         return JSON.parse(messages);
     } else return [];
 }
 
 function saveMessages(messages) {
-    localStorage.setItem('messages', JSON.stringify(messages));
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
 }
 
 function displayMessages() {
@@ -23,7 +27,7 @@ function displayMessages() {
     message.innerHTML = '';
     for (let msg of messages) {
         let newMessage = document.createElement("div");
-        newMessage.innerHTML = ` <strong>${msg.sender}</strong><p> ${msg.text}</p><div><span class="message__time">${msg.time}</span><span class="material-symbols-outlined">done_all</span></div>`;
+        newMessage.innerHTML = ` <strong>${msg.sender}</strong><p> ${msg.text}</p><div><span class="message__time">${msg.time}</span><i class="material-icons">done_all</i></div>`;
         newMessage.classList.add('message');
         newMessage.classList.add(msg.sender === currentUser ? 'sent' : 'received');
         message.append(newMessage);
@@ -41,10 +45,6 @@ function getCurrentTime() {
 
     return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
-
-
-form.addEventListener('submit', handleSubmit);
-form.addEventListener('keypress', handleKeyPress);
 
 function handleSubmit(event) {
     event.preventDefault();
@@ -72,13 +72,13 @@ function handleSubmit(event) {
 
 }
 
-function handleKeyPress(event) {
-    if (event.keyCode === 13) {
-        event.preventDefault();
-        form.dispatchEvent(new Event('submit'));
+// function handleKeyPress(event) {
+//     if (event.keyCode === 13) {
+//         event.preventDefault();
+//         form.dispatchEvent(new Event('submit'));
 
-    }
-}
+//     }
+// }
 
 window.addEventListener('load', displayMessages);
 
