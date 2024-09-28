@@ -28,12 +28,6 @@ body {
     line-height: 20px;
 }
 
-.chat__input-form {
-    width: 100%;
-    display: inline-block;
-    border: 1px solid var(--color-light-gray);
-}
-
 input[type=submit] {
     visibility: collapse;
 }
@@ -78,6 +72,9 @@ input {
     border: none;
     outline: none;
     padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chat__controls {
@@ -94,12 +91,18 @@ input {
     border: none;
     outline: none;
     padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.chat__controls button:hover {
+    color: var(--color-black);
 }
 
 .chat__avatar {
     width: 50px;
     height: 50px;
-    border-radius: 30%;
+    border-radius: 15px;
 }
 
 .chat__info {
@@ -187,14 +190,18 @@ input {
     border-top: 1px solid var(--color-light-gray);
     background-color: var(--color-input-background);
     display: flex;
+    align-items: stretch;
+    justify-content: space-evenly;
+    gap: 10px;
+    width: 100%;
+    border: 1px solid var(--color-light-gray);
 }
 
 .chat__input {
-    width: 90%;
+    width: 100%;
     padding: 10px;
-    border-radius: 15px;
+    border-radius: 10px;
     border: 1px solid var(--color-light-gray);
-    margin: 0 10px;
 }
 
 .chat__btn-send,
@@ -202,11 +209,12 @@ input {
     width: 40px;
     height: 40px;
     color: var(--color-black);
-    border-radius: 30%;
+    border-radius: 10px;
     border: none;
     font-size: 24px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: var(--color-light-gray);
 }
