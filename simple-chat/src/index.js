@@ -32,6 +32,7 @@ function displayMessages() {
         newMessage.classList.add(msg.sender === currentUser ? 'sent' : 'received');
         message.append(newMessage);
     }
+    scrollToBottom()
 
 }
 
@@ -104,4 +105,8 @@ function sendAutoReply() {
     saveMessages(messages);
 
     displayMessages();
+}
+
+function scrollToBottom() {
+    message.scrollTop = message.scrollHeight;
 }
