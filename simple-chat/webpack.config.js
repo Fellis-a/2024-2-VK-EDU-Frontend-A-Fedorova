@@ -13,10 +13,13 @@ module.exports = {
     context: SRC_PATH,
     entry: {
         index: './index.js',
+        chats: './js/chats.js',
+        header: './js/header.js',
+        addChat: './js/addChat.js',
     },
     output: {
         path: BUILD_PATH,
-        filename: 'bundle.js'
+        filename: '[name].bundle.js'
     },
     module: {
         strictExportPresence: true,
@@ -34,16 +37,7 @@ module.exports = {
                 ],
             },
             {
-                test: /shadow\.css$/,
-                include: SRC_PATH,
-                use: [
-                    {
-                        loader: 'css-loader'
-                    },
-                ],
-            },
-            {
-                test: /index\.css$/,
+                test: /\.css$/,
                 include: SRC_PATH,
                 use: [
                     {
@@ -51,18 +45,24 @@ module.exports = {
                     },
                     {
                         loader: 'css-loader',
-                    },
+                    }
                 ],
             },
         ],
     },
     plugins: [
         new MiniCSSExtractPlugin({
-            filename: 'style.css',
+            filename: '[name].css',
         }),
         new HTMLWebpackPlugin({
             filename: 'index.html',
-            template: './index.html'
-        })
+            template: './index.html',
+            chunks: ['index']
+        }),
+        new HTMLWebpackPlugin({
+            filename: 'chats.html',
+            template: './chats.html',
+            chunks: ['chats', 'header', 'addChat']
+        }),
     ]
 };
