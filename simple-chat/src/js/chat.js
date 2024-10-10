@@ -1,4 +1,4 @@
-import './index.css';
+import '../css/chat.css';
 
 const form = document.querySelector('form');
 const input = document.querySelector('.chat__input');
@@ -9,7 +9,6 @@ const selectedName = localStorage.getItem('name');
 const chatName = document.querySelector(' .chat__name');
 
 form.addEventListener('submit', handleSubmit);
-// form.addEventListener('keypress', handleKeyPress);
 
 const currentUser = 'Я';
 const otherUser = selectedName;
@@ -24,9 +23,6 @@ function getMessages() {
 
 function saveMessages(chatId, messages) {
     const allMessages = getMessages();
-    if (!allMessages[chatId]) {
-        allMessages[chatId] = [];
-    }
     allMessages[chatId] = messages;
     localStorage.setItem(MESSAGES_KEY, JSON.stringify(allMessages));
 }
@@ -72,6 +68,7 @@ function handleSubmit(event) {
 
         messages.push(newMessage);
         saveMessages(selectedChatId, messages);
+        localStorage.setItem(`lastMessage_${selectedChatId}`, JSON.stringify(newMessage));
 
         input.value = '';
         displayMessages();
@@ -82,14 +79,6 @@ function handleSubmit(event) {
     }
 
 }
-
-// function handleKeyPress(event) {
-//     if (event.keyCode === 13) {
-//         event.preventDefault();
-//         form.dispatchEvent(new Event('submit'));
-
-//     }
-// }
 
 window.addEventListener('load', displayMessages);
 
@@ -113,6 +102,8 @@ function sendAutoReply() {
     messages.push(replyMessage);
     saveMessages(selectedChatId, messages);
 
+    localStorage.setItem(`lastMessage_${selectedChatId}`, JSON.stringify(replyMessage));
+
     displayMessages();
 }
 
@@ -120,12 +111,9 @@ function scrollToBottom() {
     message.scrollTop = message.scrollHeight;
 }
 
+const chatImageUrl = localStorage.getItem(`chatImage_${selectedChatId}`);
+const chatImageElement = document.querySelector('.chat__avatar');
 
-// назад к списку чатов
-const backButton = document.querySelector('.back-button');
-
-backButton.addEventListener('click', () => {
-
-    window.location.href = 'chats.html';
-});
-
+if (chatImageElement) {
+    chatImageElement.src = chatImageUrl;
+}

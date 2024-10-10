@@ -12,8 +12,8 @@ const BUILD_PATH = path.resolve(__dirname, 'build');
 module.exports = {
     context: SRC_PATH,
     entry: {
-        index: './index.js',
-        chats: './js/chats.js',
+        index: './js/chats.js',
+        chat: './js/chat.js',
         header: './js/header.js',
         addChat: './js/addChat.js',
     },
@@ -57,12 +57,12 @@ module.exports = {
         new HTMLWebpackPlugin({
             filename: 'index.html',
             template: './index.html',
-            chunks: ['index']
+            chunks: ['index', 'header', 'addChat']
         }),
         new HTMLWebpackPlugin({
-            filename: 'chats.html',
-            template: './chats.html',
-            chunks: ['chats', 'header', 'addChat']
+            filename: 'chat.html',
+            template: './chat.html',
+            chunks: ['chat']
         }),
     ]
 };
