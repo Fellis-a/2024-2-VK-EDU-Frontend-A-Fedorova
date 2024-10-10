@@ -4,50 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send a message</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="stylesheet">
+    <title>Чаты</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
 </head>
 
 <body>
+    <header class="header">
+        <button class="header__menu"><i class="material-icons">menu</i></button>
+        <h1 class="header__title">Чаты</h1>
+        <button class="header__search"><i class="material-icons">search</i></button>
+    </header>
+
     <div class="chat">
-        <header class="chat__header">
-            <div class="chat__actions">
-                <button>
-                    <i class="material-icons">arrow_back_ios</i>
-                </button>
-                <img src="https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg" alt="Аватарка"
-                    class="chat__avatar">
-                <div class="chat__info">
-                    <h1 class="chat__name">Алиса</h1>
-                    <p class="chat__status">была недавно</p>
-                </div>
-            </div>
-            <div class="chat__controls">
-                <button><i class="material-icons">search</i></button>
-                <button><i class="material-icons">more_vert</i></button>
-            </div>
-        </header>
-
-        <section class="chat__messages">
-            <div class="message"></div>
-        </section>
-
-
-        <form class="chat__input-form">
-            <button class="chat__btn-attach"><i class="material-icons">add</i></button>
-            <input type="text" class="chat__input" placeholder="Сообщение" required>
-            <button type="submit" class="chat__btn-send">
-                <i class="material-icons">arrow_upward</i>
-            </button>
-        </form>
     </div>
+
+    <button class="floating-button" id="createChatButton"><i class="material-icons">edit</i></button>
+
 </body>
 
 </html>
