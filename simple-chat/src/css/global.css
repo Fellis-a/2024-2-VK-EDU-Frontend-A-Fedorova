@@ -1,0 +1,25 @@
+:root {
+    --color-white: #ffffff;
+    --color-black: #333333;
+    --color-light-gray: #dddddd;
+    --color-gray: #888888;
+    --color-background: #e2daf7;
+    --color-sent-message: #8667F2;
+    --color-input-background: #f7f7f7;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: var(--color-white);
+    color: var(--color-black);
+    font-size: 15px;
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    line-height: 20px;
+}

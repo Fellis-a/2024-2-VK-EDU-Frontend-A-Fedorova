@@ -1,29 +1,35 @@
-import './index.css';
+import '../css/chat.css';
 
 const form = document.querySelector('form');
 const input = document.querySelector('.chat__input');
 const message = document.querySelector('.chat__messages');
 const MESSAGES_KEY = 'messages';
+const selectedChatId = localStorage.getItem('selectedChatId');
+const selectedName = localStorage.getItem('name');
+const chatName = document.querySelector(' .chat__name');
 
 form.addEventListener('submit', handleSubmit);
-// form.addEventListener('keypress', handleKeyPress);
 
 const currentUser = 'Я';
-const otherUser = 'Друг';
+const otherUser = selectedName;
+console.log(otherUser);
 
 function getMessages() {
     let messages = localStorage.getItem(MESSAGES_KEY);
     if (messages) {
         return JSON.parse(messages);
-    } else return [];
+    } else return {};
 }
 
-function saveMessages(messages) {
-    localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
+function saveMessages(chatId, messages) {
+    const allMessages = getMessages();
+    allMessages[chatId] = messages;
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(allMessages));
 }
 
 function displayMessages() {
-    let messages = getMessages();
+    chatName.textContent = selectedName;
+    let messages = getMessages()[selectedChatId] || [];
     message.innerHTML = '';
     for (let msg of messages) {
         let newMessage = document.createElement("div");
@@ -52,7 +58,7 @@ function handleSubmit(event) {
     let messageText = input.value.trim();
 
     if (messageText) {
-        const messages = getMessages();
+        const messages = getMessages()[selectedChatId] || [];
 
         const newMessage = {
             text: messageText,
@@ -61,7 +67,8 @@ function handleSubmit(event) {
         };
 
         messages.push(newMessage);
-        saveMessages(messages);
+        saveMessages(selectedChatId, messages);
+        localStorage.setItem(`lastMessage_${selectedChatId}`, JSON.stringify(newMessage));
 
         input.value = '';
         displayMessages();
@@ -72,14 +79,6 @@ function handleSubmit(event) {
     }
 
 }
-
-// function handleKeyPress(event) {
-//     if (event.keyCode === 13) {
-//         event.preventDefault();
-//         form.dispatchEvent(new Event('submit'));
-
-//     }
-// }
 
 window.addEventListener('load', displayMessages);
 
@@ -93,20 +92,28 @@ function sendAutoReply() {
 
     const randomReply = replies[Math.floor(Math.random() * replies.length)];
 
-    const messages = getMessages();
+    const messages = getMessages()[selectedChatId] || [];
 
     const replyMessage = {
         text: randomReply,
         sender: otherUser,
         time: getCurrentTime()
     };
-
     messages.push(replyMessage);
-    saveMessages(messages);
+    saveMessages(selectedChatId, messages);
+
+    localStorage.setItem(`lastMessage_${selectedChatId}`, JSON.stringify(replyMessage));
 
     displayMessages();
 }
 
 function scrollToBottom() {
     message.scrollTop = message.scrollHeight;
+}
+
+const chatImageUrl = localStorage.getItem(`chatImage_${selectedChatId}`);
+const chatImageElement = document.querySelector('.chat__avatar');
+
+if (chatImageElement) {
+    chatImageElement.src = chatImageUrl;
 }
