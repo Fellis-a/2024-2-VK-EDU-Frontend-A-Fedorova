@@ -88,7 +88,7 @@
 
 .chat__status {
     font-size: 12px;
-    color: var(--color-primary);
+    color: var(--color-sent-message);
     display: flex;
     align-self: center;
 }
