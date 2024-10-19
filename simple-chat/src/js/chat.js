@@ -38,7 +38,16 @@ function displayMessages() {
         newMessage.classList.add(msg.sender === currentUser ? 'sent' : 'received');
         message.append(newMessage);
     }
-    scrollToBottom()
+
+    const allMessages = document.querySelectorAll('.message');
+    allMessages.forEach(msg => msg.classList.remove('new-message'));
+
+    const lastMessage = allMessages[allMessages.length - 1];
+    if (lastMessage) {
+        lastMessage.classList.add('new-message');
+    }
+
+    scrollToBottom();
 
 }
 
