@@ -1,0 +1,97 @@
+.floatingButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-sent-message);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Полупрозрачный фон */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 90%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.modal {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 350px;
+    max-width: 90%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modalTitle {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+}
+
+.modalInput {
+    width: 80%;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+
+
+}
+
+.modalButton {
+    width: 80%;
+    font-size: small;
+    padding: 10px;
+    background-color: var(--color-sent-message);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+
+
+}
+
+.modalCancelButton {
+    width: 80%;
+    font-size: small;
+    padding: 10px;
+    background-color: var(--color-black);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+}
