@@ -8,6 +8,7 @@
     --color-input-background: #f7f7f7;
 }
 
+
 @mixin transition($time: 0.2s, $type: ease-in-out) {
     transition: all $time $type;
 }
@@ -20,6 +21,7 @@ body {
     font-size: 15px;
     font-weight: 400;
     line-height: 20px;
+    overflow: hidden;
 }
 
 :root {
@@ -39,19 +41,24 @@ body {
 
 .chatItem {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 92px);
 }
 
 .chatHeader {
+
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 28px 20px 10px;
     border-bottom: 1px solid var(--color-light-gray);
+    flex-shrink: 0;
 }
 
 .chatMessages {
+    flex-grow: 1;
     padding: 15px;
-    height: calc(100vh - 193px);
     overflow-y: scroll;
     background-color: var(--color-background);
     display: flex;
@@ -114,6 +121,7 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 .chatInput {
@@ -136,4 +144,24 @@ body {
 
 .chatBtnSend:hover {
     @include transition();
+}
+
+.noMessages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100svh;
+    font-style: italic;
+}
+
+.noMessagesIcon {
+    font-size: 50px;
+    color: var(--color-black);
+    margin-bottom: 10px;
+}
+
+.noMessagesText {
+    font-size: 18px;
+    color: var(--color-gray);
 }

@@ -1,9 +1,9 @@
 import { useState, useContext } from 'react';
 import styles from './App.module.scss';
-import Header from './components/Header/Header';
-import ChatList from './components/ChatList/ChatList';
-import ChatItem from './components/ChatItem/ChatItem';
-import FloatingButton from './components/FloatingButton/FloatingButton';
+import Header from './components/Header';
+import ChatList from './pages/PageChatList';
+import ChatItem from './pages/PageChat';
+import FloatingButton from './components/FloatingButton';
 import { ChatContext } from './context/ChatProvider';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import SearchIcon from '@mui/icons-material/Search';
@@ -35,16 +35,22 @@ const App = () => {
           centerElement={<img src={selectedChat.imageUrl} alt={selectedChat.name} className={styles.chatAvatar} />}
           title={selectedChat.name}
           rightElement={
-            <div>
-              <SearchIcon />
-              <MoreVertIcon />
+            <div className={styles.chatButtons}>
+              <button className={styles.searchButton} >
+                <SearchIcon />
+              </button>
+              <button className={styles.moreButton} >
+                <MoreVertIcon />
+              </button>
             </div>
           }
         />
       ) : (
         <div className={styles.headerMain}>
           <Header title="Чаты" />
-          <SearchIcon />
+          <button className={styles.searchButton} >
+            <SearchIcon />
+          </button>
         </div>
       )}
 

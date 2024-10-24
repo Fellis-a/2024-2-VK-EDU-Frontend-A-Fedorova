@@ -1,19 +1,22 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styles from './FloatingButton.module.scss';
 import EditIcon from '@mui/icons-material/Edit';
 
 const FloatingButton = ({ addChat }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [chatName, setChatName] = useState('');
-    const [chatImage, setChatImage] = useState('');
+    const chatNameRef = useRef(null);
+    const chatImageRef = useRef(null);
 
     const handleCreateChat = () => {
+        const chatName = chatNameRef.current.value;
+        const chatImage = chatImageRef.current ? chatImageRef.current.value : 'https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg';
+
         if (chatName) {
             addChat(chatName, chatImage || 'https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg');
             setIsModalOpen(false);
-            setChatName('');
-            setChatImage('');
+            chatNameRef.current.value = '';
+            chatImageRef.current.value = '';
         } else {
             alert('Чат не был создан. Имя собеседника не указано.');
         }
@@ -24,6 +27,15 @@ const FloatingButton = ({ addChat }) => {
             setIsModalOpen(false);
         }
     };
+
+    useEffect(() => {
+        if (isModalOpen) {
+
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    }, [isModalOpen]);
 
     return (
         <>
@@ -38,15 +50,13 @@ const FloatingButton = ({ addChat }) => {
                             type="text"
                             className={styles.modalInput}
                             placeholder="Имя собеседника"
-                            value={chatName}
-                            onChange={(e) => setChatName(e.target.value)}
+                            ref={chatNameRef}
                         />
                         <input
                             type="text"
                             className={styles.modalInput}
                             placeholder="URL картинки собеседника"
-                            value={chatImage}
-                            onChange={(e) => setChatImage(e.target.value)}
+                            ref={chatImageRef}
                         />
                         <button className={styles.modalButton} onClick={handleCreateChat}>
                             Создать

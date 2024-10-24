@@ -1,13 +1,16 @@
 import PropTypes from 'prop-types';
 import styles from './ChatItem.module.scss';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { ChatContext } from '../../context/ChatProvider';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 
 const ChatItem = ({ chat }) => {
     const [message, setMessage] = useState('');
     const { sendMessage, messages } = useContext(ChatContext);
+    const chatMessages = messages[chat.chatId];
+    const messagesEndRef = useRef(null);
 
     const handleSendMessage = () => {
         if (message.trim()) {
@@ -15,6 +18,18 @@ const ChatItem = ({ chat }) => {
             setMessage('');
         }
     };
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [chatMessages]);
 
     return (
         <div className={styles.chatItem}>
@@ -30,7 +45,13 @@ const ChatItem = ({ chat }) => {
                             </span>
                         </div>
                     </div>
-                )) || <p>Нет сообщений</p>}
+                )) || (
+                        <div className={styles.noMessages}>
+                            <ChatBubbleOutlineIcon className={styles.noMessagesIcon} />
+                            <p className={styles.noMessagesText}>Нет сообщений</p>
+                        </div>
+                    )}
+                <div ref={messagesEndRef} />
             </div>
 
             <div className={styles.chatInputForm}>
@@ -38,6 +59,7 @@ const ChatItem = ({ chat }) => {
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Введите сообщение..."
                     className={styles.chatInput}
                 />

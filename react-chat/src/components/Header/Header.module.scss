@@ -4,6 +4,7 @@
     align-items: center;
     padding: 20px;
     height: 52px;
+
 }
 
 .hamburger {
@@ -35,6 +36,12 @@
 .headerTitle {
     font-size: 24px;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    /* Ширина заголовка — 100% от родительского контейнера */
+    max-width: 300px;
 }
 
 .headerNav {
