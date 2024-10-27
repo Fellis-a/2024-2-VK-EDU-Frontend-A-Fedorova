@@ -1,0 +1,93 @@
+.headerChat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    height: 52px;
+
+}
+
+.hamburger {
+    display: none;
+    cursor: pointer;
+
+    .bar {
+        display: block;
+        width: 25px;
+        height: 3px;
+        margin: 5px auto;
+        transition: all 0.3s ease;
+        background-color: var(--color-black);
+    }
+
+    &.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    &.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    &.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+}
+
+.headerTitle {
+    font-size: 24px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    /* Ширина заголовка — 100% от родительского контейнера */
+    max-width: 300px;
+}
+
+.headerNav {
+    display: none;
+
+    &.active {
+        display: flex;
+    }
+
+    .headerNavItem {
+        color: white;
+        padding: 20px;
+    }
+}
+
+
+
+.centerElement {
+    justify-self: flex-start;
+}
+
+.chatActions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.chatControls {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.chatInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+}
+
+.chatLastSeen {
+    color: var(--color-gray);
+    font-size: 14px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
