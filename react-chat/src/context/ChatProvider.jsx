@@ -10,11 +10,41 @@ const ChatProvider = ({ children }) => {
 
     useEffect(() => {
         const savedChats = JSON.parse(localStorage.getItem('chats')) || [];
-        setChats(savedChats);
-
         const savedMessages = JSON.parse(localStorage.getItem('messages')) || {};
+
+        setChats(savedChats);
         setMessages(savedMessages);
+
+        if (savedChats.length > 0) {
+            const updatedChats = savedChats.map(chat => {
+                const lastMessage = savedMessages[chat.chatId]?.slice(-1)[0];
+                return lastMessage
+                    ? {
+                        ...chat,
+                        lastMessage: lastMessage.text,
+                        lastMessageTime: lastMessage.time,
+                        lastMessageDate: lastMessage.date,
+                    }
+                    : chat;
+            });
+            setChats(updatedChats);
+        }
     }, []);
+
+    useEffect(() => {
+        setChats((prevChats) => prevChats.map(chat => {
+            const lastMessage = messages[chat.chatId]?.slice(-1)[0];
+            return lastMessage
+                ? {
+                    ...chat,
+                    lastMessage: lastMessage.text,
+                    lastMessageTime: lastMessage.time,
+                    lastMessageDate: lastMessage.date,
+                }
+                : chat;
+        }));
+    }, [messages]);
+
 
     const createChat = (chatName, chatImage) => {
         const chatId = generateUniqueChatId();
@@ -24,6 +54,7 @@ const ChatProvider = ({ children }) => {
             imageUrl: chatImage,
             lastMessage: 'Начните переписку прямо сейчас!',
             lastMessageTime: '',
+            lastMessageDate: '',
         };
 
         setChats((prevChats) => {
@@ -58,36 +89,24 @@ const ChatProvider = ({ children }) => {
         const replyMessage = {
             sender: 'Собеседник',
             text: randomReply,
-            time: new Date().toLocaleTimeString(),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toLocaleDateString(),
         };
 
-        setMessages((prevMessages) => {
-            const updatedMessages = {
-                ...prevMessages,
-                [chatId]: [...(prevMessages[chatId] || []), replyMessage],
-            };
-            localStorage.setItem('messages', JSON.stringify(updatedMessages));
-            return updatedMessages;
-        });
-
-        setChats((prevChats) => {
-            const updatedChats = prevChats.map((chat) => {
-                if (chat.chatId === chatId) {
-                    return {
-                        ...chat,
-                        lastMessage: replyMessage.text,
-                        lastMessageTime: replyMessage.time,
-                    };
-                }
-                return chat;
-            });
-            localStorage.setItem('chats', JSON.stringify(updatedChats));
-            return updatedChats;
-        });
+        updateChatMessages(chatId, replyMessage);
     };
 
     const sendMessage = (chatId, messageText) => {
-        const newMessage = { sender: 'Я', text: messageText, time: new Date().toLocaleTimeString() };
+        const firstName = localStorage.getItem('firstName') || 'Имя';
+        const lastName = localStorage.getItem('lastName') || 'Фамилия';
+        const senderName = `${firstName} ${lastName}`;
+
+        const newMessage = {
+            sender: senderName,
+            text: messageText,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toLocaleDateString(),
+        };
 
         setMessages((prevMessages) => {
             const updatedMessages = {
@@ -105,6 +124,7 @@ const ChatProvider = ({ children }) => {
                         ...chat,
                         lastMessage: newMessage.text,
                         lastMessageTime: newMessage.time,
+                        lastMessageDate: newMessage.date,
                     };
                 }
                 return chat;
@@ -118,8 +138,44 @@ const ChatProvider = ({ children }) => {
         }, 2000);
     };
 
+    const updateChatMessages = (chatId, message) => {
+        setMessages((prevMessages) => {
+            const updatedMessages = {
+                ...prevMessages,
+                [chatId]: [...(prevMessages[chatId] || []), message],
+            };
+            localStorage.setItem('messages', JSON.stringify(updatedMessages));
+            return updatedMessages;
+        });
+
+        setChats((prevChats) => {
+            const updatedChats = prevChats.map((chat) => {
+                if (chat.chatId === chatId) {
+                    return {
+                        ...chat,
+                        lastMessage: message.text,
+                        lastMessageTime: message.time,
+                        lastMessageDate: message.date,
+                    };
+                }
+                return chat;
+            });
+            localStorage.setItem('chats', JSON.stringify(updatedChats));
+            return updatedChats;
+        });
+    };
+
+
     return (
-        <ChatContext.Provider value={{ chats, selectedChat, selectChat, messages, createChat, sendMessage }}>
+        <ChatContext.Provider value={{
+            chats,
+            selectedChat,
+            setSelectedChat,
+            selectChat,
+            messages,
+            createChat,
+            sendMessage
+        }}>
             {children}
         </ChatContext.Provider>
     );

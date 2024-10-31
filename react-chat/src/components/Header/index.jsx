@@ -1,52 +1,31 @@
 import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 import styles from './Header.module.scss';
-// import { useState, useEffect } from 'react';
+import BurgerMenu from '../../components/BurgerMenu';
 
 const Header = ({ title, leftElement, centerElement, rightElement }) => {
-    // const [menuActive, setMenuActive] = useState(false);
+    const navItems = [
+        { label: 'Профиль', link: '/profile' },
+        { label: 'Уведомления', link: '/notifications' },
+        { label: 'Приватность', link: '/privacy' },
+        { label: 'Язык', link: '/language' },
+    ];
 
-    // const toggleMenu = () => {
-    //     setMenuActive(!menuActive);
-    // };
-
-    // useEffect(() => {
-    //     if (menuActive) {
-    //         document.body.classList.add(styles.bodyFixated);
-    //     } else {
-    //         document.body.classList.remove(styles.bodyFixated);
-    //     }
-    // }, [menuActive]);
+    const location = useLocation();
+    const isMainPage = location.pathname === '/';
 
     return (
         <header className={styles.headerChat}>
-            {/* <div className={`${styles.hamburger} ${menuActive ? styles.active : ''}`} onClick={toggleMenu}>
-                <span className={styles.bar}></span>
-                <span className={styles.bar}></span>
-                <span className={styles.bar}></span>
-            </div> */}
+            {isMainPage && <BurgerMenu navItems={navItems} />}
             <div className={styles.chatActions}>
-                {leftElement && <div >{leftElement}</div>}
-
+                {leftElement && <div>{leftElement}</div>}
                 {centerElement && <div className={styles.centerElement}>{centerElement}</div>}
                 <div className={styles.chatInfo}>
                     <h1 className={styles.headerTitle}>{title}</h1>
-                    {centerElement && <p className={styles.chatLastSeen}
-                    >Был(-а) недавно</p>}
-
-                </div></div>
-
-            <div> {rightElement && <div className={styles.rightElement}>{rightElement}</div>}
-            </div>
-
-            {/* <nav className={`${styles.headerNav} ${menuActive ? styles.active : ''}`}>
-                <div className={styles.headerNavTitle}>
-                    <h1>Настройки</h1>
+                    {centerElement && <p className={styles.chatLastSeen}>Был(-а) недавно</p>}
                 </div>
-                <a href="#" className={styles.headerNavItem}>Профиль</a>
-                <a href="#" className={styles.headerNavItem}>Уведомления</a>
-                <a href="#" className={styles.headerNavItem}>Приватность</a>
-                <a href="#" className={styles.headerNavItem}>Язык</a>
-            </nav> */}
+            </div>
+            {rightElement && <div className={styles.rightElement}>{rightElement}</div>}
         </header>
     );
 };
@@ -55,7 +34,7 @@ Header.propTypes = {
     title: PropTypes.string.isRequired,
     leftElement: PropTypes.element,
     centerElement: PropTypes.element,
-    rightElement: PropTypes.element
+    rightElement: PropTypes.element,
 };
 
 export default Header;
