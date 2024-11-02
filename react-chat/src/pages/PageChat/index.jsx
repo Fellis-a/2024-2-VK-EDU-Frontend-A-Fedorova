@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ChatContext } from '../../context/ChatProvider';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -12,6 +12,7 @@ const ChatItem = () => {
     const { sendMessage, messages } = useContext(ChatContext);
     const chatMessages = messages[chatId] || [];
     const messagesEndRef = useRef(null);
+    const navigate = useNavigate();
 
     const handleSendMessage = () => {
         if (message.trim()) {
@@ -33,6 +34,14 @@ const ChatItem = () => {
         }
     }, [chatMessages]);
 
+    useEffect(() => {
+        const savedChatId = localStorage.getItem('selectedChatId');
+        if (savedChatId && (!chatId || savedChatId !== chatId)) {
+            navigate(`/chat/${savedChatId}`);
+        }
+    }, [chatId, navigate]);
+
+
     return (
         <div className={styles.chatItem}>
             <div className={styles.chatMessages}>
@@ -45,7 +54,12 @@ const ChatItem = () => {
                             <span className={styles.sender}>{msg.sender}</span>
                             <p className={styles.messageText}>{msg.text}</p>
                             <div className={styles.messageInfo}>
-                                <time>{msg.time}</time>
+                                <span
+                                    title={`Дата: ${msg.date}, Время: ${msg.time}`}
+                                    className={styles.messageTime}
+                                >
+                                    {msg.time}
+                                </span>
                                 <span className={styles.icon}>
                                     <DoneAllIcon className={msg.sender === 'Собеседник' ? styles.receivedIcon : styles.sentIcon} />
                                 </span>

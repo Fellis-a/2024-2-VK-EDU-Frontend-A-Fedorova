@@ -1,40 +1,40 @@
-import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
-import styles from './Header.module.scss';
-import BurgerMenu from '../../components/BurgerMenu';
+export { default as HeaderChatList } from './HeaderChatList.jsx';
+export { default as HeaderChat } from './HeaderChat.jsx';
+export { default as HeaderProfile } from './HeaderProfile.jsx';
 
-const Header = ({ title, leftElement, centerElement, rightElement }) => {
-    const navItems = [
-        { label: 'Профиль', link: '/profile' },
-        { label: 'Уведомления', link: '/notifications' },
-        { label: 'Приватность', link: '/privacy' },
-        { label: 'Язык', link: '/language' },
-    ];
 
-    const location = useLocation();
-    const isMainPage = location.pathname === '/';
+// const Header = ({ title, leftElement, centerElement, rightElement }) => {
+//     const navItems = [
+//         { label: 'Профиль', link: '/profile' },
+//         { label: 'Уведомления', link: '/notifications' },
+//         { label: 'Приватность', link: '/privacy' },
+//         { label: 'Язык', link: '/language' },
+//     ];
 
-    return (
-        <header className={styles.headerChat}>
-            {isMainPage && <BurgerMenu navItems={navItems} />}
-            <div className={styles.chatActions}>
-                {leftElement && <div>{leftElement}</div>}
-                {centerElement && <div className={styles.centerElement}>{centerElement}</div>}
-                <div className={styles.chatInfo}>
-                    <h1 className={styles.headerTitle}>{title}</h1>
-                    {centerElement && <p className={styles.chatLastSeen}>Был(-а) недавно</p>}
-                </div>
-            </div>
-            {rightElement && <div className={styles.rightElement}>{rightElement}</div>}
-        </header>
-    );
-};
+//     const location = useLocation();
+//     const isMainPage = location.pathname === '/';
 
-Header.propTypes = {
-    title: PropTypes.string.isRequired,
-    leftElement: PropTypes.element,
-    centerElement: PropTypes.element,
-    rightElement: PropTypes.element,
-};
+//     return (
+//         <header className={styles.headerChat}>
+//             {isMainPage && <BurgerMenu navItems={navItems} />}
+//             <div className={styles.chatActions}>
+//                 {leftElement && <div>{leftElement}</div>}
+//                 {centerElement && <div className={styles.centerElement}>{centerElement}</div>}
+//                 <div className={styles.chatInfo}>
+//                     <h1 className={styles.headerTitle}>{title}</h1>
+//                     {centerElement && <p className={styles.chatLastSeen}>Был(-а) недавно</p>}
+//                 </div>
+//             </div>
+//             {rightElement && <div className={styles.rightElement}>{rightElement}</div>}
+//         </header>
+//     );
+// };
 
-export default Header;
+// Header.propTypes = {
+//     title: PropTypes.string.isRequired,
+//     leftElement: PropTypes.element,
+//     centerElement: PropTypes.element,
+//     rightElement: PropTypes.element,
+// };
+
+// export default Header;

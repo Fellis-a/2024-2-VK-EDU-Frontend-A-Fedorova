@@ -12,7 +12,6 @@
     flex-direction: column;
     justify-content: center;
     margin: 0 auto;
-    gap: 10px;
 }
 
 
@@ -167,6 +166,7 @@
     color: red;
     font-size: 12px;
     margin-top: 5px;
+    height: 5px;
 }
 
 .successMessage {
@@ -174,4 +174,8 @@
     font-size: 16px;
     text-align: center;
     margin-top: 20px;
+}
+
+.hidden {
+    visibility: hidden;
 }

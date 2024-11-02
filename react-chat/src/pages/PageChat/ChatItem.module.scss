@@ -74,7 +74,8 @@ body {
     word-break: break-word;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+
+    margin: 0;
     margin-bottom: 10px;
 
     &.sent {
@@ -172,4 +173,13 @@ body {
 
 .receivedIcon {
     color: var(--color-black);
+}
+
+.messageText {
+    padding: 0;
+    margin: 5px 0;
+}
+
+.icon {
+    margin-left: 10px;
 }

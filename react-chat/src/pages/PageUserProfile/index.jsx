@@ -1,16 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import styles from './PageUserProfile.module.scss';
-import { useNavigate } from 'react-router-dom';
-import Header from '../../components/Header';
-import DoneIcon from '@mui/icons-material/Done';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { HeaderProfile } from '../../components/Header';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
 const UserProfile = () => {
-    const navigate = useNavigate();
-    const [firstName, setFirstName] = useState(localStorage.getItem('firstName') || '');
-    const [lastName, setLastName] = useState(localStorage.getItem('lastName') || '');
-    const [username, setUsername] = useState(localStorage.getItem('username') || '');
+    const [firstName, setFirstName] = useState((localStorage.getItem('firstName') || '').trim());
+    const [lastName, setLastName] = useState((localStorage.getItem('lastName') || '').trim());
+    const [username, setUsername] = useState((localStorage.getItem('username') || '').trim());
     const [bio, setBio] = useState(localStorage.getItem('bio') || '');
     const [profileImage, setProfileImage] = useState(localStorage.getItem('profileImage') || 'https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg');
 
@@ -21,12 +17,12 @@ const UserProfile = () => {
 
     const validateFields = () => {
         const newErrors = {};
-        if (!firstName) newErrors.firstName = "Это поле обязательно";
-        if (!lastName) newErrors.lastName = "Это поле обязательно";
-        if (!username) newErrors.username = "Это поле обязательно";
-        if (firstName.length > 255) newErrors.firstName = `Длина не может превышать 255 символов (сейчас ${firstName.length})`;
-        if (lastName.length > 255) newErrors.lastName = `Длина не может превышать 255 символов (сейчас ${lastName.length})`;
-        if (username.length > 255) newErrors.username = `Длина не может превышать 255 символов (сейчас ${username.length})`;
+        if (!firstName.trim()) newErrors.firstName = "Это поле обязательно";
+        if (!lastName.trim()) newErrors.lastName = "Это поле обязательно";
+        if (!username.trim()) newErrors.username = "Это поле обязательно";
+        if (firstName.trim().length > 255) newErrors.firstName = `Длина не может превышать 255 символов (сейчас ${firstName.length})`;
+        if (lastName.trim().length > 255) newErrors.lastName = `Длина не может превышать 255 символов (сейчас ${lastName.length})`;
+        if (username.trim().length > 255) newErrors.username = `Длина не может превышать 255 символов (сейчас ${username.length})`;
         if (!/^[a-zA-Z]+$/.test(username)) newErrors.username = "Username может содержать только латинские буквы";
         return newErrors;
     };
@@ -36,14 +32,18 @@ const UserProfile = () => {
         setErrors(validationErrors);
 
         if (Object.keys(validationErrors).length === 0) {
-            localStorage.setItem('firstName', firstName);
-            localStorage.setItem('lastName', lastName);
-            localStorage.setItem('username', username);
+            localStorage.setItem('firstName', firstName.trim());
+            localStorage.setItem('lastName', lastName.trim());
+            localStorage.setItem('username', username.trim());
             localStorage.setItem('bio', bio);
             setShowSuccessMessage(true);
             setTimeout(() => setShowSuccessMessage(false), 3000);
-            navigate('/');
         }
+    };
+
+    const handleInputChange = (setter, fieldName) => (e) => {
+        setter(e.target.value);
+        setErrors((prevErrors) => ({ ...prevErrors, [fieldName]: null }));
     };
 
     const handleImageChange = () => {
@@ -71,13 +71,7 @@ const UserProfile = () => {
 
     return (
         <div className={styles.userProfile}>
-            <Header
-                title="Профиль"
-                leftElement={<button onClick={() => navigate(-1)} className={styles.backButton}>
-                    <ArrowBackIosNewIcon />
-                </button>}
-                rightElement={<button onClick={handleSave} className={styles.saveButton}><DoneIcon /></button>}
-            />
+            <HeaderProfile onSave={handleSave} />
             <div className={styles.profileContent}>
                 <div className={styles.profileImage} onClick={() => setIsModalOpen(true)}>
                     <img src={profileImage} alt="Profile" />
@@ -89,33 +83,38 @@ const UserProfile = () => {
                     type="text"
                     id="firstName"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={handleInputChange(setFirstName, "firstName")}
                     placeholder="Введите имя"
                     className={styles.textField}
                 />
-                {errors.firstName && <p className={styles.error}>{errors.firstName}</p>}
-
+                <p className={`${styles.error} ${errors.firstName ? '' : styles.hidden}`}>
+                    {errors.firstName || " "}
+                </p>
                 <label className={styles.label} htmlFor="lastName">Фамилия <span className={styles.required}>*</span></label>
                 <input
                     type="text"
                     id="lastName"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={handleInputChange(setLastName, "lastName")}
                     placeholder="Введите фамилию"
                     className={styles.textField}
                 />
-                {errors.lastName && <p className={styles.error}>{errors.lastName}</p>}
+                <p className={`${styles.error} ${errors.lastName ? '' : styles.hidden}`}>
+                    {errors.firstName || " "}
+                </p>
 
                 <label className={styles.label} htmlFor="username">Username <span className={styles.required}>*</span></label>
                 <input
                     type="text"
                     id="username"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={handleInputChange(setUsername, "username")}
                     placeholder="Введите username"
                     className={styles.textField}
                 />
-                {errors.username && <p className={styles.error}>{errors.username}</p>}
+                <p className={`${styles.error} ${errors.username ? '' : styles.hidden}`}>
+                    {errors.firstName || " "}
+                </p>
 
                 <label className={styles.label} htmlFor="bio">О себе</label>
                 <textarea

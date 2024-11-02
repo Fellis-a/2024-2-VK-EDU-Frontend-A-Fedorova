@@ -45,6 +45,13 @@ const ChatProvider = ({ children }) => {
         }));
     }, [messages]);
 
+    useEffect(() => {
+        if (selectedChat) {
+            localStorage.setItem('selectedChatId', selectedChat.chatId);
+        }
+    }, [selectedChat]);
+
+
 
     const createChat = (chatName, chatImage) => {
         const chatId = generateUniqueChatId();
@@ -98,8 +105,7 @@ const ChatProvider = ({ children }) => {
 
     const sendMessage = (chatId, messageText) => {
         const firstName = localStorage.getItem('firstName') || 'Имя';
-        const lastName = localStorage.getItem('lastName') || 'Фамилия';
-        const senderName = `${firstName} ${lastName}`;
+        const senderName = firstName;
 
         const newMessage = {
             sender: senderName,

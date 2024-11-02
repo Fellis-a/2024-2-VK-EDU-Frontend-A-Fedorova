@@ -1,15 +1,12 @@
 import { useContext } from 'react';
-import { Routes, Route, useNavigate, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import styles from './App.module.scss';
-import Header from './components/Header';
 import ChatList from './pages/PageChatList';
 import ChatItem from './pages/PageChat';
 import UserProfile from './pages/PageUserProfile';
-import FloatingButton from './components/FloatingButton';
 import { ChatContext } from './context/ChatProvider';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import SearchIcon from '@mui/icons-material/Search';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { HeaderChat } from './components/Header';
+import NotFound from './components/NotFound';
 
 const App = () => {
   const { createChat, selectChat } = useContext(ChatContext);
@@ -19,23 +16,20 @@ const App = () => {
       <Routes>
         <Route
           path="/"
+          element={<ChatList onChatSelect={selectChat} createChat={createChat} />}
+        />
+        <Route path="/chat/:chatId" element={<ChatView />} />
+        <Route
+          path="/profile"
           element={
             <>
-              <div className={styles.headerMain}>
-                <Header title="Чаты" />
-                <button className={styles.searchButton}>
-                  <SearchIcon />
-                </button>
-
-              </div>
-              <ChatList onChatSelect={selectChat} />
-              <FloatingButton addChat={createChat} />
+              <UserProfile />
             </>
           }
         />
-        <Route path="/chat/:chatId" element={<ChatView />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+
+        <Route path="*" element={<NotFound />} />
+        <Route path="/404" element={<NotFound />} />
         {/* <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/language" element={<LanguagePage />} /> */}
@@ -47,32 +41,17 @@ const App = () => {
 const ChatView = () => {
   const { chats, messages } = useContext(ChatContext);
   const { chatId } = useParams();
-  const navigate = useNavigate();
   const chat = chats.find(chat => chat.chatId === parseInt(chatId));
+
+  if (chats.length === 0) {
+    return <div>Загрузка...</div>;
+  }
 
   if (!chat) return <Navigate to="/" replace />;
 
   return (
     <>
-      <Header
-        leftElement={
-          <button onClick={() => navigate(-1)} className={styles.backButton}>
-            <ArrowBackIosNewIcon />
-          </button>
-        }
-        centerElement={<img src={chat.imageUrl} alt={chat.name} className={styles.chatAvatar} />}
-        title={chat.name}
-        rightElement={
-          <div className={styles.chatButtons}>
-            <button className={styles.searchButton}>
-              <SearchIcon />
-            </button>
-            <button className={styles.moreButton}>
-              <MoreVertIcon />
-            </button>
-          </div>
-        }
-      />
+      <HeaderChat title={chat.name} avatarUrl={chat.imageUrl} />
       <ChatItem chat={chat} messages={messages[chat.chatId] || []} />
     </>
   );
