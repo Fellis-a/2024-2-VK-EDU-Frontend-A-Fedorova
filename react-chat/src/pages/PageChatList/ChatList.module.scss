@@ -77,3 +77,29 @@
     display: flex;
     align-self: center;
 }
+
+@media (max-width: 420px) {
+    .chatItem {
+        padding: 8px;
+    }
+
+    .chatAvatar {
+        width: 35px;
+        height: 35px;
+        margin-right: 8px;
+    }
+
+    .chatTitle {
+        font-size: 14px;
+    }
+
+    .chatLastMessage {
+        font-size: 12px;
+        width: 200px;
+    }
+
+    .chatTime,
+    .chatStatus {
+        font-size: 10px;
+    }
+}
