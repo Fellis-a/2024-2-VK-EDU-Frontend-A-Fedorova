@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'https://vkedu-fullstack-div2.ru';
 
 export async function registerUser(userData) {
     const formData = new FormData();

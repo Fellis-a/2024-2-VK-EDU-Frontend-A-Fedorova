@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const fetchCurrentUser = async (accessToken) => {
             try {
-                const response = await fetch('http://localhost:8080/api/user/current/', {
+                const response = await fetch('https://vkedu-fullstack-div2.ru/api/user/current/', {
                     method: 'GET',
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
