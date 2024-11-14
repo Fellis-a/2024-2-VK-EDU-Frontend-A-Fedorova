@@ -78,6 +78,10 @@
     align-self: center;
 }
 
+a {
+    text-decoration: none;
+}
+
 @media (max-width: 420px) {
     .chatItem {
         padding: 8px;
