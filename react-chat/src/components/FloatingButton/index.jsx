@@ -42,7 +42,7 @@ const FloatingButton = ({ addChat }) => {
         }
 
         try {
-            const existingChatsResponse = await fetch(`http://localhost:8080/api/chats/?members=${userId},${selectedUser.id}`, {
+            const existingChatsResponse = await fetch(`https://vkedu-fullstack-div2.ru/api/chats/?members=${userId},${selectedUser.id}`, {
                 headers: {
                     Authorization: `Bearer ${tokens.access}`,
                 },
@@ -73,7 +73,7 @@ const FloatingButton = ({ addChat }) => {
 
             console.log('Creating chat with members:', chatData.members);
 
-            const response = await fetch('http://localhost:8080/api/chats/', {
+            const response = await fetch('https://vkedu-fullstack-div2.ru/api/chats/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
