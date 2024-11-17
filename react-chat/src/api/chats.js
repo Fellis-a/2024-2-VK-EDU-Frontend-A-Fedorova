@@ -1,8 +1,8 @@
-const API_BASE_URL = 'https://vkedu-fullstack-div2.ru';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 10) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/chats/?search=${search}&page=${page}&page_size=${pageSize}`, {
+        const response = await fetch(`${BASE_URL}/api/chats/?search=${search}&page=${page}&page_size=${pageSize}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
             }
@@ -17,7 +17,7 @@ export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 
 
 export const sendMessageApi = async (chatId, message, accessToken) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/messages/`, {
+        const response = await fetch(`${BASE_URL}/api/messages/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export const sendMessageApi = async (chatId, message, accessToken) => {
 
 export const createChatApi = async (chatData, accessToken) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/chats/`, {
+        const response = await fetch(`${BASE_URL}/api/chats/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export const createChatApi = async (chatData, accessToken) => {
 export const fetchMessages = async (chatId, accessToken, page = 1, pageSize = 20) => {
     try {
         const response = await fetch(
-            `${API_BASE_URL}/api/messages/?chat=${chatId}&page=${page}&page_size=${pageSize}`,
+            `${BASE_URL}/api/messages/?chat=${chatId}&page=${page}&page_size=${pageSize}`,
             {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,

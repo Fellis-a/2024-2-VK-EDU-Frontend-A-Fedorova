@@ -9,6 +9,9 @@ import Register from './pages/PageRegister';
 import NotFound from './components/NotFound';
 import useChats from './context/useChats';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const App = () => {
   const { tokens } = useContext(AuthContext);
   const { createChat, selectChat } = useChats();
@@ -49,7 +52,9 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar newestOnTop />
     </div>
+
   );
 };
 

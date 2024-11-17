@@ -11,6 +11,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     margin: 0 auto;
 }
 
@@ -31,16 +32,7 @@
         filter: grayscale(100%);
     }
 
-    .cameraIcon {
-        position: absolute;
-        right: 100;
-        bottom: 0;
-        border-radius: 50%;
-        padding: 5px;
-        font-size: 16px;
-        cursor: pointer;
-        color: var(--color-white)
-    }
+
 }
 
 .label {
@@ -178,4 +170,27 @@
 
 .hidden {
     visibility: hidden;
+}
+
+
+.fileInputContainer {
+    width: 100%;
+    margin-bottom: 15px;
+
+}
+
+.fileInputLabel {
+    padding: 10px;
+    background-color: var(--color-gray);
+    color: var(--color-white);
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+
+
+.fileInput {
+    display: none;
 }

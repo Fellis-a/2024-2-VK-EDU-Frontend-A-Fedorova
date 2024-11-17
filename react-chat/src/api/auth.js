@@ -1,4 +1,4 @@
-const BASE_URL = 'https://vkedu-fullstack-div2.ru';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function registerUser(userData) {
     const formData = new FormData();
@@ -29,6 +29,7 @@ export async function registerUser(userData) {
         throw error;
     }
 }
+
 export async function loginUser(credentials) {
     try {
         const response = await fetch(`${BASE_URL}/api/auth/`, {
@@ -44,7 +45,6 @@ export async function loginUser(credentials) {
 
         const data = await response.json();
         console.log('Login response:', data);
-        // Сохранение токенов и userId
         const tokens = { ...data, userId: data.user_id };
         localStorage.setItem('tokens', JSON.stringify(tokens));
 
@@ -55,23 +55,25 @@ export async function loginUser(credentials) {
     }
 }
 
-
-export async function refreshToken(refreshToken) {
+export const refreshToken = async (refreshToken) => {
     try {
         const response = await fetch(`${BASE_URL}/api/auth/refresh/`, {
             method: 'POST',
             headers: {
+
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ refresh: refreshToken }),
         });
+
         if (!response.ok) {
             throw new Error('Token refresh failed');
         }
-        return await response.json();
+
+        const newTokens = await response.json();
+        return newTokens;
     } catch (error) {
         console.error('Refresh token error:', error);
         throw error;
     }
-}
-
+};

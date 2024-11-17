@@ -1,36 +1,61 @@
-const API_BASE_URL = 'https://vkedu-fullstack-div2.ru';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getUserProfile = async () => {
+export const getUserProfile = async (tokens, refreshTokens) => {
+    if (!tokens?.access) throw new Error('Access token not available');
     try {
-        const response = await fetch(`${API_BASE_URL}/profile`, {
+        const response = await fetch(`${BASE_URL}/api/user/current/`, {
             method: 'GET',
-            credentials: 'include',
             headers: {
+                Authorization: `Bearer ${tokens.access}`,
                 'Content-Type': 'application/json',
             },
         });
-        if (!response.ok) throw new Error('Failed to fetch profile');
-        return response.json();
+
+        if (response.ok) {
+            return await response.json();
+        }
+
+        if (response.status === 401) {
+            const newTokens = await refreshTokens();
+            if (newTokens) {
+                return getUserProfile(newTokens, refreshTokens);
+            }
+        }
+
+        throw new Error('Failed to fetch user profile');
     } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching user profile:', error);
         throw error;
     }
 };
 
-export const updateUserProfile = async (profileData) => {
+export const updateUserProfile = async (uuid, formData, tokens, refreshTokens) => {
+    if (!tokens?.access) throw new Error('Access token not available');
+
     try {
-        const response = await fetch(`${API_BASE_URL}/profile`, {
-            method: 'PUT',
-            credentials: 'include',
+        const response = await fetch(`${BASE_URL}/api/user/${uuid}/`, {
+            method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokens.access}`,
             },
-            body: JSON.stringify(profileData),
+            body: formData,
         });
-        if (!response.ok) throw new Error('Failed to update profile');
-        return response.json();
+
+        if (response.ok) {
+            return await response.json();
+        }
+
+        if (response.status === 401) {
+            const newTokens = await refreshTokens();
+            if (newTokens) {
+                return updateUserProfile(uuid, formData, newTokens, refreshTokens);
+            }
+        }
+
+        const errorDetails = await response.text();
+        throw new Error(`Failed to update user profile. ${errorDetails}`);
     } catch (error) {
-        console.error('Error updating profile:', error);
+        console.error('Error updating user profile:', error);
         throw error;
     }
 };

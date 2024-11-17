@@ -4,6 +4,7 @@ import styles from './FloatingButton.module.scss';
 import EditIcon from '@mui/icons-material/Edit';
 import { AuthContext } from '../../context/AuthContext';
 import { fetchUsers } from '../../api/users';
+import { ChatContext } from '../../context/ChatProvider';
 
 const FloatingButton = ({ addChat }) => {
     const { tokens, userId } = useContext(AuthContext);
@@ -12,7 +13,7 @@ const FloatingButton = ({ addChat }) => {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const chatImageRef = useRef(null);
-    const [setSelectedChat] = useState(null);
+    const { createChat } = useContext(ChatContext);
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -41,56 +42,17 @@ const FloatingButton = ({ addChat }) => {
             return;
         }
 
+        const chatData = {
+            members: [selectedUser.id],
+            is_private: true,
+            title: `Чат с ${selectedUser.username}`,
+            created_by: userId,
+        };
+
+
         try {
-            const existingChatsResponse = await fetch(`https://vkedu-fullstack-div2.ru/api/chats/?members=${userId},${selectedUser.id}`, {
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                },
-            });
-
-            if (!existingChatsResponse.ok) {
-                throw new Error('Не удалось проверить существующие чаты');
-            }
-
-            const existingChats = await existingChatsResponse.json();
-
-            const privateChatExists = existingChats.results.some(chat => chat.is_private);
-
-            if (privateChatExists) {
-                alert('Приватный чат с этими участниками уже существует');
-                setSelectedChat(existingChats.results.find(chat => chat.is_private));
-                setIsModalOpen(false);
-                setSelectedUser(null);
-                return;
-            }
-
-            const chatData = {
-                members: [selectedUser.id],
-                is_private: true,
-                title: `Чат с ${selectedUser.username}`,
-                created_by: userId,
-            };
-
-            console.log('Creating chat with members:', chatData.members);
-
-            const response = await fetch('https://vkedu-fullstack-div2.ru/api/chats/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokens.access}`,
-                },
-                body: JSON.stringify(chatData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Ошибка при создании чата:', errorData);
-                throw new Error(errorData.detail || 'Не удалось создать чат');
-            }
-
-            const newChat = await response.json();
+            const newChat = await createChat(chatData);
             addChat(newChat.title, newChat.avatar, [userId, selectedUser.id], true);
-            setSelectedChat(newChat);
             setIsModalOpen(false);
             setSelectedUser(null);
         } catch (error) {

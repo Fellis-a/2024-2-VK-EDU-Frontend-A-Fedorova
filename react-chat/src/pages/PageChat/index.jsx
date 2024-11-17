@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChatContext } from '../../context/ChatProvider';
 import { AuthContext } from '../../context/AuthContext';
@@ -15,7 +15,7 @@ const ChatItem = () => {
     const [message, setMessage] = useState('');
     const { sendMessage, messages } = useContext(ChatContext);
     const { userId } = useContext(AuthContext);
-    const chatMessages = messages[chatId] || [];
+    const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
     const { chats } = useChats();

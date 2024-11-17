@@ -1,6 +1,8 @@
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const fetchUsers = async (accessToken) => {
     try {
-        const response = await fetch('https://vkedu-fullstack-div2.ru/api/users/', {
+        const response = await fetch(`${BASE_URL}/api/users/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -18,5 +20,4 @@ export const fetchUsers = async (accessToken) => {
         throw error;
     }
 };
-
 

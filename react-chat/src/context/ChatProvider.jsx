@@ -1,17 +1,32 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { fetchChats, sendMessageApi, createChatApi, fetchMessages } from '../api/chats';
+import { fetchChats, sendMessageApi, fetchMessages } from '../api/chats';
 import { AuthContext } from './AuthContext';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const ChatContext = createContext();
 
 const ChatProvider = ({ children }) => {
-    const { tokens, userId } = useContext(AuthContext);
+    const { tokens, userId, firstName } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState({});
     const [loading, setLoading] = useState(true);
     const [pollingInterval] = useState(5000);
+
+
+    useEffect(() => {
+        if (selectedChat && messages[selectedChat.id]) {
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+    }, [messages, selectedChat]);
+
+    useEffect(() => {
+        const savedMessages = localStorage.getItem('messages');
+        if (savedMessages) {
+            setMessages(JSON.parse(savedMessages));
+        }
+    }, []);
 
 
     useEffect(() => {
@@ -120,6 +135,7 @@ const ChatProvider = ({ children }) => {
     const sendMessage = async (chatId, messageText) => {
         const newMessage = {
             senderId: userId,
+            senderName: firstName || 'Вы',
             text: messageText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             date: new Date().toLocaleDateString(),
@@ -127,10 +143,15 @@ const ChatProvider = ({ children }) => {
 
         try {
             await sendMessageApi(chatId, messageText, tokens.access);
-            setMessages((prevMessages) => ({
-                ...prevMessages,
-                [chatId]: [...(prevMessages[chatId] || []), newMessage],
-            }));
+
+            setMessages((prevMessages) => {
+                const updatedMessages = {
+                    ...prevMessages,
+                    [chatId]: [...(prevMessages[chatId] || []), newMessage],
+                };
+                localStorage.setItem('messages', JSON.stringify(updatedMessages)); // сохраняем в localStorage
+                return updatedMessages;
+            });
 
             setChats((prevChats) =>
                 prevChats.map((c) =>
@@ -149,22 +170,29 @@ const ChatProvider = ({ children }) => {
     };
 
 
-    const createChat = async (chatName, chatImage, membersList, isPrivate) => {
-        try {
-            const newChat = await createChatApi(
-                {
-                    title: chatName,
-                    description: isPrivate ? 'Private chat' : 'Group chat',
-                    avatar: chatImage,
-                    members: membersList,
-                    is_private: isPrivate,
-                },
-                tokens.access
-            );
 
-            setChats((prevChats) => [...(Array.isArray(prevChats) ? prevChats : []), newChat]);
+
+    const createChat = async (chatData) => {
+        try {
+            const response = await fetch(`${BASE_URL}/api/chats/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokens.access}`,
+                },
+                body: JSON.stringify(chatData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка при создании чата');
+            }
+
+            const newChat = await response.json();
+            setChats(prevChats => [...prevChats, newChat]); // Добавляем новый чат в состояние
+            return newChat;
         } catch (error) {
-            console.error('Failed to create chat:', error);
+            console.error('Не удалось создать чат:', error);
+            throw error;
         }
     };
 

@@ -5,7 +5,7 @@ const NotFound = () => {
         <div style={styles.container}>
             <h1 style={styles.title}>404 - Страница не найдена</h1>
             <p style={styles.message}>К сожалению, запрашиваемая страница не существует.</p>
-            <a href="/" style={styles.link}>Вернуться на главную страницу</a>
+            <a href="/2024-2-VK-EDU-Frontend-A-Fedorova/" style={styles.link}>Вернуться на главную страницу</a>
         </div>
     );
 };

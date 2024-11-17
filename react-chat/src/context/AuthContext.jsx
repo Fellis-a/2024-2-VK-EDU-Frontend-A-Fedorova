@@ -2,70 +2,106 @@ import { createContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { refreshToken } from '../api/auth';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [tokens, setTokens] = useState(null);
     const [userId, setUserId] = useState(null);
     const [firstName, setFirstName] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
 
-    // Загружаем токены и userId, когда они изменяются
     useEffect(() => {
-        if (tokens?.userId) {
-            setUserId(tokens.userId);
+        const savedTokens = JSON.parse(localStorage.getItem('tokens'));
+        if (savedTokens?.access && savedTokens?.refresh) {
+            setTokens(savedTokens);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (tokens) {
+            localStorage.setItem('tokens', JSON.stringify(tokens));
         } else {
-            console.error('Tokens or userId not available:', tokens);
+            localStorage.removeItem('tokens');
         }
     }, [tokens]);
 
-    useEffect(() => {
-        if (!tokens?.refresh) return; // Если токенов нет, не пытаться обновить их
-        const interval = setInterval(async () => {
-            try {
-                const newTokens = await refreshToken(tokens.refresh);
-                setTokens(newTokens);
-                console.log('Token refreshed successfully');
-            } catch (error) {
-                console.error('Error during token refresh:', error);
-            }
-        }, 15 * 60 * 1000);
 
-        return () => clearInterval(interval);
-    }, [tokens]);
 
-    useEffect(() => {
-        const fetchCurrentUser = async (accessToken) => {
-            try {
-                const response = await fetch('https://vkedu-fullstack-div2.ru/api/user/current/', {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
+    const refreshTokens = async () => {
+        if (refreshing) return;
+        setRefreshing(true);
+        try {
+            if (!tokens?.refresh) throw new Error('No refresh token available');
+            const newTokens = await refreshToken(tokens.refresh);
+            setTokens(newTokens);
+            return newTokens;
+        } catch (error) {
+            console.error('Token refresh failed:', error);
+            setTokens(null);
+            localStorage.removeItem('tokens');
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
-                if (!response.ok) {
-                    throw new Error('Не удалось получить данные текущего пользователя');
+
+    const fetchCurrentUser = async () => {
+        if (!tokens?.access) return;
+        try {
+            const response = await fetch(`${BASE_URL}/api/user/current/`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${tokens.access}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const user = await response.json();
+                setFirstName(user.first_name);
+                setUserId(user.id);
+            } else if (response.status === 401) {
+                console.log('Access token expired or invalid. Refreshing...');
+                const newTokens = await refreshTokens();
+                if (newTokens) {
+                    fetchCurrentUser();
                 }
-
-                const data = await response.json();
-                setFirstName(data.first_name);
-                console.log('Данные текущего пользователя:', data); // Для отладки
-                setUserId(data.id);
-            } catch (error) {
-                console.error('Ошибка при получении текущего пользователя:', error);
+            } else {
+                throw new Error('Failed to fetch user data');
             }
-        };
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
 
+
+    useEffect(() => {
         if (tokens?.access) {
-            fetchCurrentUser(tokens.access);
+            fetchCurrentUser();
         }
     }, [tokens]);
 
+    useEffect(() => {
+        if (!tokens?.access || !tokens?.refresh) return;
+
+        const accessPayload = JSON.parse(atob(tokens.access.split('.')[1]));
+        const expiryTime = accessPayload.exp * 1000 - 60000;
+        const timeout = setTimeout(async () => {
+            try {
+                await refreshTokens();
+            } catch (error) {
+                console.error('Token refresh failed:', error);
+            }
+        }, expiryTime - Date.now());
+
+        return () => clearTimeout(timeout);
+    }, [tokens]);
 
 
     return (
-        <AuthContext.Provider value={{ tokens, setTokens, userId, firstName }}>
+        <AuthContext.Provider value={{ tokens, setTokens, userId, firstName, refreshTokens }}>
             {children}
         </AuthContext.Provider>
     );

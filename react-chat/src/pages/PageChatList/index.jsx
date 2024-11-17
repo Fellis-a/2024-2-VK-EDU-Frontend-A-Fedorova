@@ -49,7 +49,7 @@ const ChatList = ({ onChatSelect }) => {
                                 onClick={() => onChatSelect(chat.id)}
                                 to={`/chat/${chat.id}`}
                             >
-                                <img className={styles.chatAvatar} src={avatarUrl} alt={chatName} />
+                                <img className={styles.chatAvatar} src={avatarUrl} alt={`Аватар пользователя ${chatName}`} />
                                 <div className={styles.chatDetails}>
                                     <span className={styles.chatTitle}>{chatName}</span>
                                     <p className={styles.chatLastMessage}>

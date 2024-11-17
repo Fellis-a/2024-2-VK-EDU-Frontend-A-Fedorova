@@ -82,28 +82,30 @@ a {
     text-decoration: none;
 }
 
+
+
 @media (max-width: 420px) {
     .chatItem {
-        padding: 8px;
+        padding: 12px;
     }
 
     .chatAvatar {
-        width: 35px;
-        height: 35px;
-        margin-right: 8px;
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
     }
 
     .chatTitle {
-        font-size: 14px;
+        font-size: 18px;
     }
 
     .chatLastMessage {
-        font-size: 12px;
+        font-size: 16px;
         width: 200px;
     }
 
     .chatTime,
     .chatStatus {
-        font-size: 10px;
+        font-size: 12px;
     }
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { registerUser } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageRegister.module.scss';
+import { toast } from 'react-toastify';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -35,9 +36,43 @@ function Register() {
         try {
             await registerUser({ ...formData, avatar });
             console.log('User registered successfully');
+            toast.success('Красавчик, теперь войди в свой аккаунт!');
             navigate('/login');
         } catch (error) {
             console.error('Error during registration:', error);
+            if (error.response) {
+                const { data, status } = error.response;
+
+                if (data && typeof data === 'object') {
+                    Object.keys(data).forEach((field) => {
+                        data[field].forEach((errorMessage) => {
+                            toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${errorMessage}`);
+                        });
+                    });
+                }
+
+                switch (status) {
+                    case 400:
+                        toast.error('Плохой запрос. Попробуйте ещё раз!');
+                        break;
+                    case 403:
+                        toast.error('У вас нет прав для выполнения этой операции!');
+                        break;
+                    case 404:
+                        toast.error('Страница не найдена!');
+                        break;
+                    case 429:
+                        toast.error('Слишком много запросов. Попробуйте позже!');
+                        break;
+                    case 500:
+                        toast.error('Ошибка на сервере. Попробуйте позже!');
+                        break;
+                    default:
+                        toast.error('Что-то пошло не так. Попробуйте снова!');
+                }
+            } else {
+                toast.error('Нет связи с сервером. Попробуйте позже!');
+            }
         }
     };
 

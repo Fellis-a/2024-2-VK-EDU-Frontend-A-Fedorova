@@ -8,12 +8,13 @@ import { HashRouter } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AuthProvider>
-      <ChatProvider>
-        <HashRouter>
+
+    <HashRouter>
+      <AuthProvider>
+        <ChatProvider>
           <App />
-        </HashRouter>
-      </ChatProvider>
-    </AuthProvider>
+        </ChatProvider>
+      </AuthProvider>
+    </HashRouter>
   </StrictMode>,
 )
