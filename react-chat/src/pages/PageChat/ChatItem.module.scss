@@ -134,7 +134,7 @@ body {
 }
 
 .chatBtnSend {
-    padding: 10px 20px;
+    padding: 10px 10px;
     color: var(--color-white);
     background-color: var(--color-sent-message);
     border: none;
@@ -182,4 +182,21 @@ body {
 
 .icon {
     margin-left: 10px;
+}
+
+.messageFiles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.messageImage {
+    max-width: 100%; // Ограничьте размер изображения, чтобы оно не выходило за пределы экрана
+    max-height: 300px; // Максимальная высота изображения
+    margin-top: 10px;
+}
+
+.chatMessages.dragging {
+    border: 2px dashed #00f;
+    background-color: #f0f8ff;
 }

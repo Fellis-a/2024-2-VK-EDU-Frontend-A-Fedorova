@@ -17,6 +17,7 @@ export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 
 
 export const sendMessageApi = async (chatId, message, accessToken) => {
     try {
+        console.log(accessToken);
         const response = await fetch(`${BASE_URL}/api/messages/`, {
             method: 'POST',
             headers: {
