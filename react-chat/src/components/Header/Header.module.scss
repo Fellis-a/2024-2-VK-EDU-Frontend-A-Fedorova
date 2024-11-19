@@ -45,6 +45,7 @@
     width: 100%;
     /* Ширина заголовка — 100% от родительского контейнера */
     max-width: 300px;
+    line-height: 30px;
 }
 
 .headerTitle {
@@ -173,4 +174,16 @@
 .backButton:focus,
 .backButton:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
+}
+
+.saveButton {
+    background-color: #646cff;
+    border: none;
+
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    color: white;
 }

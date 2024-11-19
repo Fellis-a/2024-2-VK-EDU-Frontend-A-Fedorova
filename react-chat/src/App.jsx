@@ -1,59 +1,60 @@
-import { useContext } from 'react';
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
-import styles from './App.module.scss';
+import { useContext, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthContext } from './context/AuthContext';
 import ChatList from './pages/PageChatList';
 import ChatItem from './pages/PageChat';
 import UserProfile from './pages/PageUserProfile';
-import { ChatContext } from './context/ChatProvider';
-import { HeaderChat } from './components/Header';
+import Login from './pages/PageLogin';
+import Register from './pages/PageRegister';
 import NotFound from './components/NotFound';
+import useChats from './context/useChats';
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
-  const { createChat, selectChat } = useContext(ChatContext);
+  const { tokens } = useContext(AuthContext);
+  const { createChat, selectChat } = useChats();
+
+  useEffect(() => {
+    if (tokens) {
+      console.log("User is logged in");
+    } else {
+      console.log("User is not logged in");
+    }
+  }, [tokens]);
+
+  const handleCreateChat = (chatName, chatImage) => {
+    createChat(chatName, chatImage);
+  };
+
+  const handleChatSelect = (chatId) => {
+    selectChat(chatId);
+  };
 
   return (
-    <div className={styles.app}>
+    <div className="app">
       <Routes>
         <Route
           path="/"
-          element={<ChatList onChatSelect={selectChat} createChat={createChat} />}
+          element={tokens ? (
+            <ChatList
+              onChatSelect={handleChatSelect}
+              createChat={handleCreateChat}
+            />
+          ) : (
+            <Navigate to="/login" />
+          )}
         />
-        <Route path="/chat/:chatId" element={<ChatView />} />
-        <Route
-          path="/profile"
-          element={
-            <>
-              <UserProfile />
-            </>
-          }
-        />
-
+        <Route path="/chat/:chatId" element={<ChatItem />} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/404" element={<NotFound />} />
-        {/* <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/language" element={<LanguagePage />} /> */}
       </Routes>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar newestOnTop />
     </div>
-  );
-};
 
-const ChatView = () => {
-  const { chats, messages } = useContext(ChatContext);
-  const { chatId } = useParams();
-  const chat = chats.find(chat => chat.chatId === parseInt(chatId));
-
-  if (chats.length === 0) {
-    return <div>Загрузка...</div>;
-  }
-
-  if (!chat) return <Navigate to="/" replace />;
-
-  return (
-    <>
-      <HeaderChat title={chat.name} avatarUrl={chat.imageUrl} />
-      <ChatItem chat={chat} messages={messages[chat.chatId] || []} />
-    </>
   );
 };
 

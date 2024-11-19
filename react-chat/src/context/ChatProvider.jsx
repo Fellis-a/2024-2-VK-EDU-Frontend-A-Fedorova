@@ -1,187 +1,220 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { fetchChats, sendMessageApi, fetchMessages } from '../api/chats';
+import { AuthContext } from './AuthContext';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const ChatContext = createContext();
 
 const ChatProvider = ({ children }) => {
+    const { tokens, userId, firstName } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [pollingInterval] = useState(5000);
+
 
     useEffect(() => {
-        const savedChats = JSON.parse(localStorage.getItem('chats')) || [];
-        const savedMessages = JSON.parse(localStorage.getItem('messages')) || {};
+        if (selectedChat && messages[selectedChat.id]) {
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+    }, [messages, selectedChat]);
 
-        setChats(savedChats);
-        setMessages(savedMessages);
-
-        if (savedChats.length > 0) {
-            const updatedChats = savedChats.map(chat => {
-                const lastMessage = savedMessages[chat.chatId]?.slice(-1)[0];
-                return lastMessage
-                    ? {
-                        ...chat,
-                        lastMessage: lastMessage.text,
-                        lastMessageTime: lastMessage.time,
-                        lastMessageDate: lastMessage.date,
-                    }
-                    : chat;
-            });
-            setChats(updatedChats);
+    useEffect(() => {
+        const savedMessages = localStorage.getItem('messages');
+        if (savedMessages) {
+            setMessages(JSON.parse(savedMessages));
         }
     }, []);
 
+
     useEffect(() => {
-        setChats((prevChats) => prevChats.map(chat => {
-            const lastMessage = messages[chat.chatId]?.slice(-1)[0];
-            return lastMessage
-                ? {
-                    ...chat,
-                    lastMessage: lastMessage.text,
-                    lastMessageTime: lastMessage.time,
-                    lastMessageDate: lastMessage.date,
+        if (tokens?.access) {
+            const loadChats = async () => {
+                try {
+                    const data = await fetchChats(tokens.access);
+                    const chatsWithLastMessages = await Promise.all(
+                        data.results.map(async (chat) => {
+                            const messagesData = await fetchMessages(chat.id, tokens.access);
+                            const lastMessage = messagesData.results[messagesData.results.length - 1];
+
+                            return {
+                                ...chat,
+                                lastMessage: lastMessage ? lastMessage.text : 'Нет сообщений',
+                                lastMessageTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                            };
+                        })
+                    );
+                    setChats(chatsWithLastMessages);
+                } catch (error) {
+                    console.error('Failed to load chats:', error);
+                    setChats([]);
+                } finally {
+                    setLoading(false);
                 }
-                : chat;
-        }));
-    }, [messages]);
-
-    useEffect(() => {
-        if (selectedChat) {
-            localStorage.setItem('selectedChatId', selectedChat.chatId);
+            };
+            loadChats();
+        } else {
+            setLoading(false);
         }
-    }, [selectedChat]);
+    }, [tokens]);
 
 
+    const selectChat = async (chatId) => {
+        const chat = chats.find((chat) => chat.id === chatId);
+        if (chat) {
+            setSelectedChat(chat);
+            try {
+                const data = await fetchMessages(chatId, tokens.access);
+                const chatMessages = (data.results || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-    const createChat = (chatName, chatImage) => {
-        const chatId = generateUniqueChatId();
-        const newChat = {
-            chatId,
-            name: chatName,
-            imageUrl: chatImage,
-            lastMessage: 'Начните переписку прямо сейчас!',
-            lastMessageTime: '',
-            lastMessageDate: '',
-        };
+                setMessages((prevMessages) => ({
+                    ...prevMessages,
+                    [chatId]: chatMessages.map((msg) => ({
+                        senderId: msg.sender.id,
+                        senderName: msg.sender.first_name,
+                        text: msg.text,
+                        time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        date: new Date(msg.created_at).toLocaleDateString(),
 
-        setChats((prevChats) => {
-            const updatedChats = [...prevChats, newChat];
-            localStorage.setItem('chats', JSON.stringify(updatedChats));
-            return updatedChats;
-        });
+                    })),
+                }));
+                console.log(chatMessages)
+                const lastMessage = chatMessages[chatMessages.length - 1];
+                setChats((prevChats) =>
+                    prevChats.map((c) =>
+                        c.id === chatId
+                            ? {
+                                ...c,
+                                lastMessage: lastMessage ? lastMessage.text : 'Нет сообщений',
+                                lastMessageTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                            }
+                            : c
+                    )
+                );
+            } catch (error) {
+                console.error('Failed to load messages:', error);
+            }
+        }
     };
 
-    const generateUniqueChatId = () => {
-        let chatId;
-        do {
-            chatId = Math.floor(Math.random() * 1000000);
-        } while (chats.some(chat => chat.chatId === chatId));
-        return chatId;
-    };
+    // Периодический polling для обновления сообщений
+    useEffect(() => {
+        let intervalId;
+        if (selectedChat) {
+            intervalId = setInterval(async () => {
+                try {
+                    const chatId = selectedChat.id;
+                    const data = await fetchMessages(chatId, tokens.access);
+                    const chatMessages = data.results || [];
 
-    const selectChat = (chatId) => {
-        const chat = chats.find((chat) => chat.chatId === chatId);
-        setSelectedChat(chat);
-    };
+                    // Сортируем новые сообщения
+                    chatMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-    const autoReply = (chatId) => {
-        const replies = [
-            "Привет!",
-            "Расскажи мне что-нибудь интересное!",
-            "Как твой день?",
-            "Отлично, продолжай!",
-        ];
-        const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    setMessages((prevMessages) => ({
+                        ...prevMessages,
+                        [chatId]: chatMessages.map((msg) => ({
+                            senderId: msg.sender.id,
+                            senderName: msg.sender.first_name,
+                            text: msg.text,
+                            time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            date: new Date(msg.created_at).toLocaleDateString(),
+                        })),
+                    }));
+                } catch (error) {
+                    console.error('Error fetching messages in polling:', error);
+                }
+            }, pollingInterval);
 
-        const replyMessage = {
-            sender: 'Собеседник',
-            text: randomReply,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            date: new Date().toLocaleDateString(),
-        };
+            return () => clearInterval(intervalId);
+        }
+    }, [selectedChat, pollingInterval, tokens]);
 
-        updateChatMessages(chatId, replyMessage);
-    };
 
-    const sendMessage = (chatId, messageText) => {
-        const firstName = localStorage.getItem('firstName') || 'Имя';
-        const senderName = firstName;
-
+    const sendMessage = async (chatId, messageText) => {
         const newMessage = {
-            sender: senderName,
+            senderId: userId,
+            senderName: firstName || 'Вы',
             text: messageText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             date: new Date().toLocaleDateString(),
         };
 
-        setMessages((prevMessages) => {
-            const updatedMessages = {
-                ...prevMessages,
-                [chatId]: [...(prevMessages[chatId] || []), newMessage],
-            };
-            localStorage.setItem('messages', JSON.stringify(updatedMessages));
-            return updatedMessages;
-        });
+        try {
+            await sendMessageApi(chatId, messageText, tokens.access);
 
-        setChats((prevChats) => {
-            const updatedChats = prevChats.map((chat) => {
-                if (chat.chatId === chatId) {
-                    return {
-                        ...chat,
-                        lastMessage: newMessage.text,
-                        lastMessageTime: newMessage.time,
-                        lastMessageDate: newMessage.date,
-                    };
-                }
-                return chat;
+            setMessages((prevMessages) => {
+                const updatedMessages = {
+                    ...prevMessages,
+                    [chatId]: [...(prevMessages[chatId] || []), newMessage],
+                };
+                localStorage.setItem('messages', JSON.stringify(updatedMessages)); // сохраняем в localStorage
+                return updatedMessages;
             });
-            localStorage.setItem('chats', JSON.stringify(updatedChats));
-            return updatedChats;
-        });
 
-        setTimeout(() => {
-            autoReply(chatId);
-        }, 2000);
+            setChats((prevChats) =>
+                prevChats.map((c) =>
+                    c.id === chatId
+                        ? {
+                            ...c,
+                            lastMessage: messageText,
+                            lastMessageTime: newMessage.time,
+                        }
+                        : c
+                )
+            );
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        }
     };
 
-    const updateChatMessages = (chatId, message) => {
-        setMessages((prevMessages) => {
-            const updatedMessages = {
-                ...prevMessages,
-                [chatId]: [...(prevMessages[chatId] || []), message],
-            };
-            localStorage.setItem('messages', JSON.stringify(updatedMessages));
-            return updatedMessages;
-        });
 
-        setChats((prevChats) => {
-            const updatedChats = prevChats.map((chat) => {
-                if (chat.chatId === chatId) {
-                    return {
-                        ...chat,
-                        lastMessage: message.text,
-                        lastMessageTime: message.time,
-                        lastMessageDate: message.date,
-                    };
-                }
-                return chat;
+
+
+    const createChat = async (chatData) => {
+        try {
+            const response = await fetch(`${BASE_URL}/api/chats/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokens.access}`,
+                },
+                body: JSON.stringify(chatData),
             });
-            localStorage.setItem('chats', JSON.stringify(updatedChats));
-            return updatedChats;
-        });
+
+            if (!response.ok) {
+                throw new Error('Ошибка при создании чата');
+            }
+
+            const newChat = await response.json();
+            setChats(prevChats => [...prevChats, newChat]); // Добавляем новый чат в состояние
+            return newChat;
+        } catch (error) {
+            console.error('Не удалось создать чат:', error);
+            throw error;
+        }
     };
 
+    useEffect(() => {
+        const savedChatId = localStorage.getItem('selectedChatId');
+        if (savedChatId) {
+            selectChat(savedChatId);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (selectedChat) {
+            localStorage.setItem('selectedChatId', selectedChat.id);
+        }
+    }, [selectedChat]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <ChatContext.Provider value={{
-            chats,
-            selectedChat,
-            setSelectedChat,
-            selectChat,
-            messages,
-            createChat,
-            sendMessage
-        }}>
+        <ChatContext.Provider value={{ chats, selectedChat, setSelectedChat, messages, sendMessage, createChat, selectChat }}>
             {children}
         </ChatContext.Provider>
     );

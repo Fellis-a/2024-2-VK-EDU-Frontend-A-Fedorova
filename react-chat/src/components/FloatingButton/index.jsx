@@ -1,41 +1,72 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styles from './FloatingButton.module.scss';
 import EditIcon from '@mui/icons-material/Edit';
+import { AuthContext } from '../../context/AuthContext';
+import { fetchUsers } from '../../api/users';
+import { ChatContext } from '../../context/ChatProvider';
 
 const FloatingButton = ({ addChat }) => {
+    const { tokens, userId } = useContext(AuthContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const chatNameRef = useRef(null);
+    const [isPrivate, setIsPrivate] = useState(true);
+    const [users, setUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
     const chatImageRef = useRef(null);
+    const { createChat } = useContext(ChatContext);
 
-    const handleCreateChat = () => {
-        const chatName = chatNameRef.current.value;
-        const chatImage = chatImageRef.current ? chatImageRef.current.value : 'https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg';
+    useEffect(() => {
+        const loadUsers = async () => {
+            try {
+                const userData = await fetchUsers(tokens.access);
+                setUsers(userData.results);
+            } catch (error) {
+                console.error('Не удалось загрузить пользователей:', error);
+            }
+        };
 
-        if (chatName) {
-            addChat(chatName, chatImage || 'https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg');
+        if (tokens?.access) {
+            loadUsers();
+        }
+    }, [tokens]);
+
+    const handleCreateChat = async () => {
+        if (!selectedUser) {
+            alert('Выберите собеседника');
+            return;
+        }
+
+        if (!userId || !selectedUser?.id) {
+            console.error('Некорректные ID участников:', userId, selectedUser?.id);
+            alert('Некорректные ID участников');
+            return;
+        }
+
+        const chatData = {
+            members: [selectedUser.id],
+            is_private: true,
+            title: `Чат с ${selectedUser.username}`,
+            created_by: userId,
+        };
+
+
+        try {
+            const newChat = await createChat(chatData);
+            addChat(newChat.title, newChat.avatar, [userId, selectedUser.id], true);
             setIsModalOpen(false);
-            chatNameRef.current.value = '';
-            chatImageRef.current.value = '';
-        } else {
-            alert('Чат не был создан. Имя собеседника не указано.');
+            setSelectedUser(null);
+        } catch (error) {
+            console.error('Ошибка при создании чата:', error);
+            alert('Не удалось создать чат');
         }
     };
+
 
     const handleOverlayClick = (e) => {
         if (e.target === e.currentTarget) {
             setIsModalOpen(false);
         }
     };
-
-    useEffect(() => {
-        if (isModalOpen) {
-
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-    }, [isModalOpen]);
 
     return (
         <>
@@ -46,24 +77,35 @@ const FloatingButton = ({ addChat }) => {
                 <div className={styles.overlay} onClick={handleOverlayClick}>
                     <div className={styles.modal}>
                         <h2 className={styles.modalTitle}>Создать новый чат</h2>
-                        <input
-                            type="text"
+                        <select
                             className={styles.modalInput}
-                            placeholder="Имя собеседника"
-                            ref={chatNameRef}
-                        />
+                            onChange={(e) => setSelectedUser(users.find(user => user.id === e.target.value))}
+                            value={selectedUser ? selectedUser.id : ''}
+                        >
+                            <option value="">Выберите собеседника</option>
+                            {users.map((user) => (
+                                <option key={user.id} value={user.id}>
+                                    {user.username} ({user.first_name} {user.last_name})
+                                </option>
+                            ))}
+                        </select>
+
                         <input
-                            type="text"
+                            type="file"
                             className={styles.modalInput}
-                            placeholder="URL картинки собеседника"
+                            placeholder="Загрузите картинку собеседника"
                             ref={chatImageRef}
                         />
-                        <button className={styles.modalButton} onClick={handleCreateChat}>
-                            Создать
-                        </button>
-                        <button className={styles.modalCancelButton} onClick={() => setIsModalOpen(false)}>
-                            Отмена
-                        </button>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={isPrivate}
+
+                                onChange={() => setIsPrivate(!isPrivate)}
+                            />
+                            Приватный чат
+                        </label>
+                        <button className={styles.modalButton} onClick={handleCreateChat}>Создать чат</button>
                     </div>
                 </div>
             )}

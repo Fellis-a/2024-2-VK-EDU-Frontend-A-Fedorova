@@ -1,19 +1,39 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
+import { AuthContext } from '../../context/AuthContext';
+import { getUserProfile, updateUserProfile } from '../../api/profile';
 import styles from './PageUserProfile.module.scss';
 import { HeaderProfile } from '../../components/Header';
-import ModeEditIcon from '@mui/icons-material/ModeEdit';
+
 
 const UserProfile = () => {
-    const [firstName, setFirstName] = useState((localStorage.getItem('firstName') || '').trim());
-    const [lastName, setLastName] = useState((localStorage.getItem('lastName') || '').trim());
-    const [username, setUsername] = useState((localStorage.getItem('username') || '').trim());
-    const [bio, setBio] = useState(localStorage.getItem('bio') || '');
-    const [profileImage, setProfileImage] = useState(localStorage.getItem('profileImage') || 'https://cs13.pikabu.ru/post_img/2023/10/28/2/1698456437194820220.jpg');
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { tokens, refreshTokens } = useContext(AuthContext);
+    const [id, setId] = useState(null);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [username, setUsername] = useState('');
+    const [bio, setBio] = useState('');
+    const [profileImage, setProfileImage] = useState('');
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [errors, setErrors] = useState({});
     const profileImageRef = useRef(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const profile = await getUserProfile(tokens, refreshTokens);
+                setId(profile.id);
+                setFirstName(profile.first_name);
+                setLastName(profile.last_name);
+                setUsername(profile.username);
+                setBio(profile.bio || '');
+                setProfileImage(profile.avatar || '');
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+        };
+
+        if (tokens) fetchProfile();
+    }, [tokens, refreshTokens]);
 
     const validateFields = () => {
         const newErrors = {};
@@ -27,17 +47,28 @@ const UserProfile = () => {
         return newErrors;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const validationErrors = validateFields();
         setErrors(validationErrors);
 
-        if (Object.keys(validationErrors).length === 0) {
-            localStorage.setItem('firstName', firstName.trim());
-            localStorage.setItem('lastName', lastName.trim());
-            localStorage.setItem('username', username.trim());
-            localStorage.setItem('bio', bio);
-            setShowSuccessMessage(true);
-            setTimeout(() => setShowSuccessMessage(false), 3000);
+        if (Object.keys(validationErrors).length === 0 && id) {
+            try {
+                const formData = new FormData();
+                formData.append('first_name', firstName.trim());
+                formData.append('last_name', lastName.trim());
+                formData.append('username', username.trim());
+                formData.append('bio', bio);
+                if (profileImage instanceof File) {
+                    formData.append('avatar', profileImage);
+                }
+
+                const result = await updateUserProfile(id, formData, tokens, refreshTokens);
+                console.log('Результат сохранения:', result);
+                setShowSuccessMessage(true);
+                setTimeout(() => setShowSuccessMessage(false), 3000);
+            } catch (error) {
+                console.error('Ошибка сохранения:', error.response || error.message || error);
+            }
         }
     };
 
@@ -46,36 +77,37 @@ const UserProfile = () => {
         setErrors((prevErrors) => ({ ...prevErrors, [fieldName]: null }));
     };
 
-    const handleImageChange = () => {
-        const newImageUrl = profileImageRef.current.value;
-        if (newImageUrl) {
-            setProfileImage(newImageUrl);
-            localStorage.setItem('profileImage', newImageUrl);
-            setIsModalOpen(false);
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProfileImage(file);
         }
     };
-
-    const handleOverlayClick = (e) => {
-        if (e.target === e.currentTarget) {
-            setIsModalOpen(false);
-        }
-    };
-
-    useEffect(() => {
-        if (isModalOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-    }, [isModalOpen]);
 
     return (
         <div className={styles.userProfile}>
             <HeaderProfile onSave={handleSave} />
             <div className={styles.profileContent}>
-                <div className={styles.profileImage} onClick={() => setIsModalOpen(true)}>
-                    <img src={profileImage} alt="Profile" />
-                    <div className={styles.cameraIcon}><ModeEditIcon /></div>
+                <div className={styles.profileImage}>
+                    <img
+                        src={typeof profileImage === 'string' ? profileImage : URL.createObjectURL(profileImage)}
+                        alt="Profile"
+                    />
+                    <div className={styles.fileInputContainer}>
+                        <label htmlFor="profileImage" className={styles.fileInputLabel}>
+                            Choose File
+                        </label>
+                        <input
+                            type="file"
+                            id="profileImage"
+                            accept="image/*"
+                            ref={profileImageRef}
+                            onChange={handleFileChange}
+                            className={styles.fileInput}
+                        />
+
+
+                    </div>
                 </div>
 
                 <label className={styles.label} htmlFor="firstName">Имя <span className={styles.required}>*</span></label>
@@ -90,6 +122,7 @@ const UserProfile = () => {
                 <p className={`${styles.error} ${errors.firstName ? '' : styles.hidden}`}>
                     {errors.firstName || " "}
                 </p>
+
                 <label className={styles.label} htmlFor="lastName">Фамилия <span className={styles.required}>*</span></label>
                 <input
                     type="text"
@@ -100,7 +133,7 @@ const UserProfile = () => {
                     className={styles.textField}
                 />
                 <p className={`${styles.error} ${errors.lastName ? '' : styles.hidden}`}>
-                    {errors.firstName || " "}
+                    {errors.lastName || " "}
                 </p>
 
                 <label className={styles.label} htmlFor="username">Username <span className={styles.required}>*</span></label>
@@ -113,7 +146,7 @@ const UserProfile = () => {
                     className={styles.textField}
                 />
                 <p className={`${styles.error} ${errors.username ? '' : styles.hidden}`}>
-                    {errors.firstName || " "}
+                    {errors.username || " "}
                 </p>
 
                 <label className={styles.label} htmlFor="bio">О себе</label>
@@ -125,22 +158,6 @@ const UserProfile = () => {
                     className={styles.textArea}
                 />
             </div>
-
-            {isModalOpen && (
-                <div className={styles.overlay} onClick={handleOverlayClick}>
-                    <div className={styles.modal}>
-                        <h2 className={styles.modalTitle}>Изменить фото профиля</h2>
-                        <input
-                            type="text"
-                            placeholder="URL нового фото"
-                            ref={profileImageRef}
-                            className={styles.modalInput}
-                        />
-                        <button className={styles.modalButton} onClick={handleImageChange}>Сохранить</button>
-                        <button className={styles.modalCancelButton} onClick={() => setIsModalOpen(false)}>Отмена</button>
-                    </div>
-                </div>
-            )}
 
             {showSuccessMessage && <p className={styles.successMessage}>Профиль успешно сохранён!</p>}
         </div>
