@@ -18,9 +18,16 @@ export async function registerUser(userData) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Registration error details:", errorData);
-            throw new Error('Registration failed');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                console.error("Registration error details:", errorData);
+                throw { message: 'Registration failed', details: errorData };
+            } else {
+                const errorText = await response.text();
+                console.error("Unexpected error response:", errorText);
+                throw { message: 'Unexpected error', details: errorText };
+            }
         }
 
         return await response.json();
@@ -40,7 +47,16 @@ export async function loginUser(credentials) {
             body: JSON.stringify(credentials),
         });
         if (!response.ok) {
-            throw new Error('Login failed');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                console.error("Login error details:", errorData);
+                throw { message: 'Login failed', details: errorData };
+            } else {
+                const errorText = await response.text();
+                console.error("Unexpected error response:", errorText);
+                throw { message: 'Unexpected error', details: errorText };
+            }
         }
 
         const data = await response.json();

@@ -24,6 +24,7 @@ const styles = {
     title: {
         fontSize: '3rem',
         marginBottom: '1rem',
+        lineHeight: 'normal',
     },
     message: {
         fontSize: '1.5rem',

@@ -22,6 +22,7 @@ body {
     font-weight: 400;
     line-height: 20px;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 :root {
@@ -127,7 +128,7 @@ body {
 
 .chatInput {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border-radius: 10px;
     border: 1px solid var(--color-light-gray);
     font-size: 16px;
@@ -141,6 +142,10 @@ body {
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
+    line-height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chatBtnSend:hover {
@@ -191,12 +196,26 @@ body {
 }
 
 .messageImage {
-    max-width: 100%; // Ограничьте размер изображения, чтобы оно не выходило за пределы экрана
-    max-height: 300px; // Максимальная высота изображения
+    max-width: 100%;
+    max-height: 300px;
     margin-top: 10px;
 }
 
 .chatMessages.dragging {
     border: 2px dashed #00f;
     background-color: #f0f8ff;
+}
+
+.voiceMessage {
+    margin-top: 5px;
+    border-radius: 10px;
+
+    &::-webkit-media-controls-panel {
+        background-color: var(--color-white);
+        border-radius: 5px;
+    }
+
+    @media (max-width: 600px) {
+        width: 150px;
+    }
 }

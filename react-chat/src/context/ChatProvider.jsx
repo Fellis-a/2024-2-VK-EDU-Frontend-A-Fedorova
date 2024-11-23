@@ -28,7 +28,6 @@ const ChatProvider = ({ children }) => {
         }
     }, []);
 
-
     useEffect(() => {
         if (tokens?.access) {
             const loadChats = async () => {
@@ -77,9 +76,11 @@ const ChatProvider = ({ children }) => {
                         text: msg.text,
                         time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         date: new Date(msg.created_at).toLocaleDateString(),
-
+                        files: msg.files || null,
+                        voice: msg.voice || null,
                     })),
                 }));
+
                 console.log(chatMessages)
                 const lastMessage = chatMessages[chatMessages.length - 1];
                 setChats((prevChats) =>
@@ -120,8 +121,11 @@ const ChatProvider = ({ children }) => {
                             text: msg.text,
                             time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                             date: new Date(msg.created_at).toLocaleDateString(),
+                            files: msg.files || null,
+                            voice: msg.voice || null,
                         })),
                     }));
+
                 } catch (error) {
                     console.error('Error fetching messages in polling:', error);
                 }
@@ -132,24 +136,31 @@ const ChatProvider = ({ children }) => {
     }, [selectedChat, pollingInterval, tokens]);
 
 
-    const sendMessage = async (chatId, messageText) => {
+    const sendMessage = async (chatId, messageText, files, voice, accessToken) => {
+        if (!accessToken) {
+            console.error('Токен недействителен');
+            console.log(accessToken);
+            return;
+        }
+
         const newMessage = {
             senderId: userId,
             senderName: firstName || 'Вы',
             text: messageText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             date: new Date().toLocaleDateString(),
+            files: files.map(file => ({ item: file })),
+            voice: voice || null,
         };
 
         try {
-            await sendMessageApi(chatId, messageText, tokens.access);
-
+            await sendMessageApi(chatId, messageText, voice, files, accessToken); // передаем все данные
             setMessages((prevMessages) => {
                 const updatedMessages = {
                     ...prevMessages,
                     [chatId]: [...(prevMessages[chatId] || []), newMessage],
                 };
-                localStorage.setItem('messages', JSON.stringify(updatedMessages)); // сохраняем в localStorage
+                localStorage.setItem('messages', JSON.stringify(updatedMessages));
                 return updatedMessages;
             });
 

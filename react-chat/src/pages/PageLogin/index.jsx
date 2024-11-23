@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageLogin.module.scss';
+import { toast } from 'react-toastify';
 
 function Login() {
     const [credentials, setCredentials] = useState({
@@ -28,9 +29,30 @@ function Login() {
             const tokens = await loginUser(credentials);
             setTokens(tokens);
             console.log('User logged in successfully:', tokens);
+            toast.success('Вы успешно вошли в систему!');
             navigate('/');
         } catch (error) {
             console.error('Error during login:', error);
+
+            if (error.details && typeof error.details === 'object') {
+                if (error.details.detail) {
+                    toast.error(error.details.detail);
+                } else {
+                    Object.entries(error.details).forEach(([field, messages]) => {
+                        if (Array.isArray(messages)) {
+                            messages.forEach((message) => {
+                                toast.error(`${field}: ${message}`);
+                            });
+                        } else {
+                            toast.error(`${field}: ${messages}`);
+                        }
+                    });
+                }
+            } else if (error.details) {
+                toast.error(error.details);
+            } else {
+                toast.error('Ошибка входа. Попробуйте еще раз.');
+            }
         }
     };
 
