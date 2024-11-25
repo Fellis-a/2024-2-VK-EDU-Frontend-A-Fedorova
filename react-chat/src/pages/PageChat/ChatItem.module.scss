@@ -219,3 +219,20 @@ body {
         width: 150px;
     }
 }
+
+.sent .geoLink {
+    color: var(--color-white);
+}
+
+.sent .geoLink:hover {
+    text-decoration: underline;
+}
+
+
+.received .geoLink {
+    color: var(--color-black);
+}
+
+.received .geoLink:hover {
+    text-decoration: underline;
+}

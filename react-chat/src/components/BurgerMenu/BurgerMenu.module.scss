@@ -1,6 +1,13 @@
 .burgerMenuContainer {
     position: relative;
     margin-right: 20px;
+    border: 1px grey solid;
+
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
 }
 
 .hamburger {

@@ -36,12 +36,22 @@ const ChatProvider = ({ children }) => {
                     const chatsWithLastMessages = await Promise.all(
                         data.results.map(async (chat) => {
                             const messagesData = await fetchMessages(chat.id, tokens.access);
-                            const lastMessage = messagesData.results[messagesData.results.length - 1];
+                            const sortedMessages = (messagesData.results || []).sort(
+                                (a, b) => new Date(a.created_at) - new Date(b.created_at)
+                            );
+                            const lastMessage = sortedMessages[sortedMessages.length - 1];
 
                             return {
                                 ...chat,
+                                avatar: chat.avatar || '/default-avatar.png',
                                 lastMessage: lastMessage ? lastMessage.text : 'Нет сообщений',
-                                lastMessageTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                                lastMessageTime: lastMessage
+                                    ? new Date(lastMessage.created_at).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })
+                                    : '',
+
                             };
                         })
                     );
@@ -58,6 +68,7 @@ const ChatProvider = ({ children }) => {
             setLoading(false);
         }
     }, [tokens]);
+
 
 
     const selectChat = async (chatId) => {
@@ -139,7 +150,6 @@ const ChatProvider = ({ children }) => {
     const sendMessage = async (chatId, messageText, files, voice, accessToken) => {
         if (!accessToken) {
             console.error('Токен недействителен');
-            console.log(accessToken);
             return;
         }
 
@@ -149,12 +159,14 @@ const ChatProvider = ({ children }) => {
             text: messageText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             date: new Date().toLocaleDateString(),
-            files: files.map(file => ({ item: file })),
+            files: files ? files.map(file => ({ item: file })) : null,
             voice: voice || null,
+            created_at: new Date().toISOString(),
         };
 
         try {
-            await sendMessageApi(chatId, messageText, voice, files, accessToken); // передаем все данные
+            await sendMessageApi(chatId, messageText, voice, files, accessToken);
+
             setMessages((prevMessages) => {
                 const updatedMessages = {
                     ...prevMessages,
@@ -169,7 +181,7 @@ const ChatProvider = ({ children }) => {
                     c.id === chatId
                         ? {
                             ...c,
-                            lastMessage: messageText,
+                            lastMessage: newMessage.text,
                             lastMessageTime: newMessage.time,
                         }
                         : c
@@ -179,6 +191,7 @@ const ChatProvider = ({ children }) => {
             console.error('Failed to send message:', error);
         }
     };
+
 
 
 

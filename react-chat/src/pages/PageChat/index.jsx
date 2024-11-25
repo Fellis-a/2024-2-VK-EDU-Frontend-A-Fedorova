@@ -18,7 +18,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ChatItem = () => {
     const { chatId } = useParams();
     const [message, setMessage] = useState('');
-    const { sendMessage, messages } = useContext(ChatContext);
+    const { sendMessage, messages, selectedChat } = useContext(ChatContext);
     const { userId } = useContext(AuthContext);
     const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
     const messagesEndRef = useRef(null);
@@ -31,6 +31,7 @@ const ChatItem = () => {
     const [voice, setVoice] = useState(null);
     const currentChat = chats.find((chat) => chat.id === chatId);
     const [isDragging, setIsDragging] = useState(false);
+
 
     //drag and drop
     const handleFileDrop = async (event) => {
@@ -253,7 +254,7 @@ const ChatItem = () => {
 
     return (
         <div className={styles.chatItem}>
-            <HeaderChat title={currentChat ? currentChat.title : 'Чат'} imageUrl={currentChat ? currentChat.imageUrl : ''} />
+            <HeaderChat title={currentChat ? selectedChat.title : 'Чат'} avatarUrl={currentChat ? selectedChat.avatar : ''} />
             <div
                 className={`${styles.chatMessages} ${isDragging ? styles.dragging : ''}`}
                 onDrop={handleFileDrop}
@@ -272,7 +273,7 @@ const ChatItem = () => {
                                     ))}
 
                                     {msg.text.startsWith('http') ? (
-                                        <a href={msg.text} target="_blank" rel="noopener noreferrer">
+                                        <a className={styles.geoLink} href={msg.text} target="_blank" rel="noopener noreferrer">
                                             {msg.text}
                                         </a>
                                     ) : (
