@@ -18,86 +18,37 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ChatItem = () => {
     const { chatId } = useParams();
     const [message, setMessage] = useState('');
-    const { sendMessage, messages, selectedChat } = useContext(ChatContext);
+    const { sendMessage, messages } = useContext(ChatContext);
     const { userId } = useContext(AuthContext);
     const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
     const messagesEndRef = useRef(null);
     const [voiceBlob, setVoiceBlob] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef(null);
-    const [selectedFiles, setSelectedFiles] = useState([]);
     const { chats } = useChats();
     const { tokens } = useContext(AuthContext);
-    const [voice, setVoice] = useState(null);
     const currentChat = chats.find((chat) => chat.id === chatId);
     const [isDragging, setIsDragging] = useState(false);
 
-
-    //drag and drop
-    const handleFileDrop = async (event) => {
-        event.preventDefault();
-        setIsDragging(false);
-
-        const files = event.dataTransfer.files;
-        if (!tokens.access) {
-            console.error('Токен не найден');
+    const handleSendMessage = () => {
+        if (!tokens?.access) {
+            console.error('Токен не найден!');
             return;
         }
-
-        const accessToken = tokens?.access;
-        const formData = new FormData();
-        formData.append('chat', chatId);
-        formData.append('text', message.trim() || '');
-
-        Array.from(files).forEach((file) => {
-            formData.append('files', file);
-        });
-
-        try {
-            const response = await fetch(`${BASE_URL}/api/messages/`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${tokens.access}`,
-                },
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Ошибка при отправке:', errorData);
-                throw new Error(`Ошибка загрузки: ${response.status}`);
-            }
-
-            const messageData = await response.json();
-            sendMessage(chatId, {
-                text: messageData.text || '[Изображение]',
-                imageSrc: messageData.files?.[0]?.item, accessToken,
-            });
-            console.log(messageData)
-        } catch (error) {
-            console.error('Ошибка при отправке файла:', error);
+        if (message.trim()) {
+            sendMessage(chatId, message.trim(), null, null);
+            setMessage('');
         }
     };
 
 
-    const handleDragOver = (event) => {
-        event.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDragging(false);
-    };
-
-    //geolocation
     const handleSendLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     const locationUrl = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
-                    sendMessage(chatId, locationUrl, [], null, tokens.access);
-
+                    sendMessage(chatId, locationUrl, null, null);
                     console.log("Отправка геолокации:", { chatId, locationUrl });
                 },
                 (error) => {
@@ -109,22 +60,6 @@ const ChatItem = () => {
         }
     };
 
-
-    const handleSendMessage = () => {
-        if (!tokens?.access) {
-            console.error('Токен не найден!');
-            return;
-        }
-
-        if (message.trim() || selectedFiles.length > 0 || voice) {
-            sendMessage(chatId, message, selectedFiles, voice, tokens.access);
-            setMessage('');
-            setSelectedFiles([]);
-            setVoice(null);
-        }
-    };
-
-    //voice message
     const handleStartRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -169,6 +104,14 @@ const ChatItem = () => {
         return mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || '';
     };
 
+    const handleVoiceButtonClick = () => {
+        if (isRecording) {
+            handleStopRecording();
+        } else {
+            handleStartRecording();
+        }
+    };
+
     const handleSendVoice = async () => {
         if (!voiceBlob || !tokens?.access) return;
         const mimeType = getSupportedMimeType();
@@ -194,13 +137,64 @@ const ChatItem = () => {
                 throw new Error('Ошибка при отправке голосового сообщения');
             }
 
-            const messageData = await response.json();
-            sendMessage(chatId, messageData.text || '[Изображение]', messageData.voiceUrl, tokens.access);
+            // const messageData = await response.json();
+            // sendMessage(chatId, messageData.text || '[голосовое сообщение]', null, messageData.voiceUrl);
             setVoiceBlob(null);
-            console.log(messageData)
         } catch (error) {
             console.error('Ошибка при отправке голосового сообщения:', error);
         }
+    };
+    const handleFileDrop = async (event) => {
+        event.preventDefault();
+        setIsDragging(false);
+
+        const files = Array.from(event.dataTransfer.files);
+        if (!tokens?.access) {
+            console.error('Токен не найден');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('chat', chatId);
+        formData.append('text', message.trim() || '');
+
+        files.forEach((file) => {
+            formData.append('files', file);
+        });
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/messages/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${tokens.access}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Ошибка при отправке файла:', errorData);
+                throw new Error('Ошибка загрузки файла');
+            }
+
+            const messageData = await response.json();
+            console.log('Ответ от сервера:', messageData);
+
+            // // Добавляем сообщение в чат
+            // sendMessage(chatId, messageData.text || '[Файл]', messageData.files?.[0]?.item);
+        } catch (error) {
+            console.error('Ошибка при отправке файла:', error);
+        }
+    };
+
+
+    const handleDragOver = (event) => {
+        event.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
     };
 
     useEffect(() => {
@@ -209,13 +203,11 @@ const ChatItem = () => {
         }
     }, [chatMessages]);
 
-    //notifications
     useEffect(() => {
         if (Notification.permission === 'default') {
             Notification.requestPermission().catch(console.error);
         }
     }, []);
-
 
     const showNotification = (title, body) => {
         if (Notification.permission === 'granted') {
@@ -225,7 +217,6 @@ const ChatItem = () => {
             console.warn('Нет разрешения для отправки уведомлений.');
         }
     };
-
 
     useEffect(() => {
         const newMessages = Object.entries(messages).filter(([id, msgs]) => {
@@ -251,10 +242,15 @@ const ChatItem = () => {
             handleSendMessage();
         }
     };
+    useEffect(() => {
+        if (voiceBlob) {
+            handleSendVoice();
+        }
+    }, [voiceBlob]);
 
     return (
         <div className={styles.chatItem}>
-            <HeaderChat title={currentChat ? selectedChat.title : 'Чат'} avatarUrl={currentChat ? selectedChat.avatar : ''} />
+            <HeaderChat title={currentChat ? currentChat.title : 'Чат'} avatarUrl={currentChat ? currentChat.avatar : ''} />
             <div
                 className={`${styles.chatMessages} ${isDragging ? styles.dragging : ''}`}
                 onDrop={handleFileDrop}
@@ -272,7 +268,7 @@ const ChatItem = () => {
                                         <img key={index} src={file.item} alt="Uploaded content" className={styles.messageImage} />
                                     ))}
 
-                                    {msg.text.startsWith('http') ? (
+                                    {typeof msg.text === 'string' && msg.text.startsWith('http') ? (
                                         <a className={styles.geoLink} href={msg.text} target="_blank" rel="noopener noreferrer">
                                             {msg.text}
                                         </a>
@@ -318,15 +314,9 @@ const ChatItem = () => {
                     <ArrowUpwardIcon />
                 </button>
                 <button className={styles.chatBtnSend} onClick={handleSendLocation}><AddLocationIcon /></button>
-                {!isRecording ? (
-                    <button onClick={handleStartRecording} className={styles.chatBtnSend} >
-                        <KeyboardVoiceIcon />
-                    </button>
-                ) : (
-                    <button onClick={handleStopRecording} className={styles.chatBtnSend} >
-                        <StopCircleIcon />
-                    </button>
-                )}
+                <button onClick={handleVoiceButtonClick} className={styles.chatBtnSend}>
+                    {isRecording ? <StopCircleIcon /> : <KeyboardVoiceIcon />}
+                </button>
             </footer>
         </div>
     );

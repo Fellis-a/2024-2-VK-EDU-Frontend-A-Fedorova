@@ -64,12 +64,32 @@ export async function loginUser(credentials) {
         const tokens = { ...data, userId: data.user_id };
         localStorage.setItem('tokens', JSON.stringify(tokens));
 
+        if (!data.user_id) {
+            const userResponse = await fetch(`${BASE_URL}/api/user/current/`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${data.access}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (userResponse.ok) {
+                const user = await userResponse.json();
+                tokens.userId = user.id;
+                localStorage.setItem('tokens', JSON.stringify(tokens));
+                console.log('User data fetched:', user);
+            } else {
+                console.error('Failed to fetch user data');
+            }
+        }
+
         return tokens;
     } catch (error) {
         console.error('Login error:', error);
         throw error;
     }
 }
+
 
 export const refreshToken = async (refreshToken) => {
     try {

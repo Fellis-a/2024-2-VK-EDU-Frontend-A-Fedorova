@@ -29,6 +29,7 @@ export const sendMessageApi = async (chatId, message, voice, files, accessToken)
         if (message) formData.append('text', message);
 
         if (voice) formData.append('voice', voice);
+        console.log(voice)
 
         if (files && files.length > 0) {
             files.forEach(file => {
