@@ -133,6 +133,20 @@
     border: 1px solid var(--color-light-gray);
 }
 
+.headerChatList {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid var(--color-light-gray);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: var(--color-white);
+}
+
 .chatInfo {
     display: flex;
     flex-direction: column;
@@ -200,4 +214,37 @@
     display: flex;
     align-items: center;
     color: var(--color-white);
+}
+
+.chatButtons {
+    position: relative;
+
+    .dropdownMenu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        list-style: none;
+        padding: 0;
+
+        li {
+            button {
+                background: none;
+                border: none;
+                padding: 8px 16px;
+                text-align: left;
+                width: 100%;
+                font-size: 14px;
+                cursor: pointer;
+
+                &:hover {
+                    background: #f5f5f5;
+                }
+            }
+        }
+    }
 }

@@ -20,6 +20,14 @@ const ChatList = ({ onChatSelect }) => {
         }
     }, [tokens, navigate]);
 
+    function getInitials(firstName, lastName) {
+        const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+        const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+        return `${firstInitial}${lastInitial}`;
+    }
+
+
+
     return (
         <div className={styles.pageChatList}>
             <HeaderChatList />
@@ -30,15 +38,21 @@ const ChatList = ({ onChatSelect }) => {
                     chatArray.map(chat => {
                         const isPrivateChat = chat.is_private;
                         let chatName = chat.title;
+                        let firstName = '';
+                        let lastName = '';
+
 
                         if (isPrivateChat && chat.members && currentUser) {
                             const otherMember = chat.members.find(
                                 member => member.id !== currentUser.id
                             );
                             chatName = otherMember ? otherMember.first_name : 'Неизвестный';
+                            firstName = otherMember?.first_name || '';
+                            lastName = otherMember?.last_name || '';
                         }
 
                         const avatarUrl = chat.avatar;
+                        const initials = getInitials(firstName, lastName);
 
                         return (
                             <Link
@@ -47,7 +61,17 @@ const ChatList = ({ onChatSelect }) => {
                                 onClick={() => onChatSelect(chat.id)}
                                 to={`/chat/${chat.id}`}
                             >
-                                <img className={styles.chatAvatar} src={avatarUrl} alt={`Аватар пользователя ${chatName}`} />
+                                {avatarUrl ? (
+                                    <img
+                                        className={styles.chatAvatar}
+                                        src={avatarUrl}
+                                        alt={`Аватар пользователя ${chatName}`}
+                                    />
+                                ) : (
+                                    <div className={styles.chatAvatarFallback}>
+                                        {initials || chatName.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                                 <div className={styles.chatDetails}>
                                     <span className={styles.chatTitle}>{chatName}</span>
                                     <p className={styles.chatLastMessage}>

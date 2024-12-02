@@ -17,6 +17,7 @@ const ChatProvider = ({ children }) => {
     const [subscription, setSubscription] = useState(null);
 
 
+
     useEffect(() => {
         if (selectedChat && messages[selectedChat.id]) {
             localStorage.setItem('messages', JSON.stringify(messages));
@@ -256,7 +257,7 @@ const ChatProvider = ({ children }) => {
     }
 
     return (
-        <ChatContext.Provider value={{ chats, selectedChat, setSelectedChat, messages, sendMessage, createChat, selectChat }}>
+        <ChatContext.Provider value={{ chats, selectedChat, setSelectedChat, messages, sendMessage, createChat, selectChat, setChats }}>
             {children}
         </ChatContext.Provider>
     );

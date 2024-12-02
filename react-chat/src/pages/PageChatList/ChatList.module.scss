@@ -1,10 +1,17 @@
-.chatList {
+.pageChatList {
     display: flex;
     flex-direction: column;
-    padding: 0;
-    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+
+}
+
+.chatList {
+    flex-grow: 1;
     overflow-y: auto;
-    max-height: 100vh;
+    padding: 0;
+    padding-top: 89px;
+    margin: 0;
 }
 
 .chatItem {
@@ -17,7 +24,6 @@
 
     &:hover {
         background-color: var(--color-light-gray);
-        transform: scale(1.0005);
     }
 }
 
@@ -83,6 +89,21 @@
 a {
     text-decoration: none;
 }
+
+.chatAvatarFallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ddd;
+    color: #555;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
 
 
 

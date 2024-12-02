@@ -3,10 +3,11 @@ import { AuthContext } from '../../context/AuthContext';
 import { getUserProfile, updateUserProfile } from '../../api/profile';
 import styles from './PageUserProfile.module.scss';
 import { HeaderProfile } from '../../components/Header';
+import { deleteUserAccount } from '../../api/profile';
 
 
 const UserProfile = () => {
-    const { tokens, refreshTokens } = useContext(AuthContext);
+    const { tokens, refreshTokens, setTokens } = useContext(AuthContext);
     const [id, setId] = useState(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -34,6 +35,21 @@ const UserProfile = () => {
 
         if (tokens) fetchProfile();
     }, [tokens, refreshTokens]);
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm('Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.')) {
+            try {
+                await deleteUserAccount(id, tokens, refreshTokens);
+                alert('Ваш аккаунт был успешно удалён. Вы будете перенаправлены на главную страницу.');
+                setTokens(null); // Удаляем токены из AuthContext
+                localStorage.removeItem('tokens'); // Удаляем токены из localStorage
+                window.location.href = '/'; // Перенаправляем на главную страницу
+            } catch (error) {
+                console.error('Ошибка при удалении аккаунта:', error);
+                alert('Произошла ошибка при удалении аккаунта. Попробуйте ещё раз позже.');
+            }
+        }
+    };
 
     const validateFields = () => {
         const newErrors = {};
@@ -160,7 +176,11 @@ const UserProfile = () => {
                         className={styles.textArea}
                     />
                 </div>
-
+                <div className={styles.deleteAccount}>
+                    <button onClick={handleDeleteAccount} className={styles.deleteButton}>
+                        Удалить аккаунт
+                    </button>
+                </div>
             </div>
         </div>
     );

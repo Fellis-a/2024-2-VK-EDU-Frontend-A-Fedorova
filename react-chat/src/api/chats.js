@@ -97,3 +97,20 @@ export const fetchMessages = async (chatId, accessToken, page = 1, pageSize = 20
 };
 
 
+export const deleteChatApi = async (chatId, accessToken) => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/chat/${chatId}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Не удалось удалить чат');
+        }
+        return true;
+    } catch (error) {
+        console.error('Ошибка при удалении чата:', error);
+        throw error;
+    }
+};

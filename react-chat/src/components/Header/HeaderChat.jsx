@@ -1,13 +1,24 @@
 import PropTypes from 'prop-types';
 // import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import styles from './Header.module.scss';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link } from 'react-router-dom';
 
-const HeaderChat = ({ title, avatarUrl }) => {
+const HeaderChat = ({ title, avatarUrl, onDeleteChat }) => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const toggleMenu = () => {
+        setMenuOpen((prev) => !prev);
+    };
 
+    const handleDeleteChat = () => {
+        if (window.confirm('Вы уверены, что хотите удалить этот чат?')) {
+            onDeleteChat();
+            setMenuOpen(false);
+        }
+    };
 
     return (
         <header className={styles.headerChat}>
@@ -25,9 +36,18 @@ const HeaderChat = ({ title, avatarUrl }) => {
                 <button className={styles.searchButton}>
                     <SearchIcon />
                 </button>
-                <button className={styles.moreButton}>
+                <button className={styles.moreButton} onClick={toggleMenu}>
                     <MoreVertIcon />
                 </button>
+                {menuOpen && (
+                    <ul className={styles.dropdownMenu}>
+                        <li>
+                            <button onClick={handleDeleteChat} className={styles.deleteButton}>
+                                Удалить чат
+                            </button>
+                        </li>
+                    </ul>
+                )}
             </div>
         </header>
     );
@@ -36,6 +56,7 @@ const HeaderChat = ({ title, avatarUrl }) => {
 HeaderChat.propTypes = {
     title: PropTypes.string.isRequired,
     avatarUrl: PropTypes.string.isRequired,
+    onDeleteChat: PropTypes.func.isRequired,
 };
 
 export default HeaderChat;
