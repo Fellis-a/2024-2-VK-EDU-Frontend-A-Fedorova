@@ -1,11 +1,10 @@
-import { useState, useContext, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChatContext } from '../../context/ChatProvider';
-import { AuthContext } from '../../context/AuthContext';
 import styles from './ChatItem.module.scss';
-import useChats from '../../context/useChats';
 import { HeaderChat } from '../../components/Header';
 import { deleteChatApi } from '../../api/chats';
+import useAuthStore from '../../store/authStore';
+import useChatStore from '../../store/chatsListStore';
 
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -21,19 +20,18 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ChatItem = () => {
     const { chatId } = useParams();
     const [message, setMessage] = useState('');
-    const { sendMessage, messages, setSelectedChat, setChats, selectedChat } = useContext(ChatContext);
-    const { userId } = useContext(AuthContext);
+    const { chats, selectedChat, setSelectedChat, setChats, sendMessage, messages } = useChatStore();
+    const { tokens } = useAuthStore();
+    const userId = useAuthStore.getState().getUserId();
+
     const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
     const messagesEndRef = useRef(null);
     const [voiceBlob, setVoiceBlob] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef(null);
-    const { chats } = useChats();
-    const { tokens } = useContext(AuthContext);
     const currentChat = chats.find((chat) => chat.id === chatId);
     const [isDragging, setIsDragging] = useState(false);
     const navigate = useNavigate();
-
 
 
     const handleSendMessage = () => {
@@ -42,23 +40,45 @@ const ChatItem = () => {
             return;
         }
         if (message.trim()) {
-            sendMessage(chatId, message.trim(), null, null);
+            sendMessage(chatId, message.trim(), null, null, tokens?.access);
             setMessage('');
         }
     };
+
+    // const handleDeleteChat = async () => {
+    //     if (!selectedChat) return;
+
+    //     console.log("Deleting chat:", selectedChat.id);
+
+    //     try {
+    //         await deleteChatApi(selectedChat.id, tokens.access);
+    //         console.log('Chat deleted successfully');
+    //         setChats((prevChats) => {
+    //             const updatedChats = prevChats.filter((chat) => chat.id !== selectedChat.id);
+    //             console.log('Updated chats:', updatedChats);  // Логируем обновленный список чатов
+    //             return updatedChats;
+    //         });
+    //         setSelectedChat(null);
+    //         alert('Чат успешно удален.');
+    //         navigate('/');
+    //     } catch (error) {
+    //         console.error('Ошибка удаления чата:', error);
+    //         alert('Не удалось удалить чат.');
+    //     }
+    // };
 
     const handleDeleteChat = async () => {
         if (!selectedChat) return;
 
         try {
             await deleteChatApi(selectedChat.id, tokens.access);
+
             setChats((prevChats) => prevChats.filter((chat) => chat.id !== selectedChat.id));
             setSelectedChat(null);
             alert('Чат успешно удален.');
             navigate('/');
         } catch (error) {
-            console.error('Ошибка удаления чата:', error);
-            alert('Не удалось удалить чат.');
+            console.error('Ошибка при удалении чата:', error);
         }
     };
 
@@ -69,7 +89,7 @@ const ChatItem = () => {
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     const locationUrl = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
-                    sendMessage(chatId, locationUrl, null, null);
+                    sendMessage(chatId, locationUrl, null, null, tokens?.access);
                     console.log("Отправка геолокации:", { chatId, locationUrl });
                 },
                 (error) => {

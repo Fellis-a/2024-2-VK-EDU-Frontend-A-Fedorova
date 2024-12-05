@@ -1,13 +1,18 @@
-import { useState, useEffect, useContext, useRef } from 'react';
-import { AuthContext } from '../../context/AuthContext';
+import { useState, useEffect, useRef } from 'react';
+
 import { getUserProfile, updateUserProfile } from '../../api/profile';
 import styles from './PageUserProfile.module.scss';
 import { HeaderProfile } from '../../components/Header';
 import { deleteUserAccount } from '../../api/profile';
+import useAuthStore from '../../store/authStore';
+import { useNavigate } from 'react-router-dom';
+
 
 
 const UserProfile = () => {
-    const { tokens, refreshTokens, setTokens } = useContext(AuthContext);
+    const { refreshTokens } = useAuthStore();
+    const { tokens, setTokens } = useAuthStore();
+
     const [id, setId] = useState(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -17,6 +22,7 @@ const UserProfile = () => {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [errors, setErrors] = useState({});
     const profileImageRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -41,9 +47,9 @@ const UserProfile = () => {
             try {
                 await deleteUserAccount(id, tokens, refreshTokens);
                 alert('Ваш аккаунт был успешно удалён. Вы будете перенаправлены на главную страницу.');
-                setTokens(null); // Удаляем токены из AuthContext
-                localStorage.removeItem('tokens'); // Удаляем токены из localStorage
-                window.location.href = '/'; // Перенаправляем на главную страницу
+                setTokens(null);
+                localStorage.removeItem('tokens');
+                navigate('/login');
             } catch (error) {
                 console.error('Ошибка при удалении аккаунта:', error);
                 alert('Произошла ошибка при удалении аккаунта. Попробуйте ещё раз позже.');

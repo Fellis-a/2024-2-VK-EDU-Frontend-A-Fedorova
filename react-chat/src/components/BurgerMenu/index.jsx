@@ -1,13 +1,13 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import styles from './BurgerMenu.module.scss';
-import { AuthContext } from '../../context/AuthContext';
+import useAuthStore from '../../store/authStore';
 
 const BurgerMenu = ({ navItems }) => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
-    const { setTokens, setCurrentUser } = useContext(AuthContext);
+    const { clearTokens } = useAuthStore();
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -20,9 +20,7 @@ const BurgerMenu = ({ navItems }) => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('tokens');
-        setTokens(null);
-        setCurrentUser(null);
+        clearTokens();
         toggleMenu();
         navigate('/login');
     };

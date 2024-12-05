@@ -1,19 +1,21 @@
-import { useState, useRef, useContext, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styles from './FloatingButton.module.scss';
 import EditIcon from '@mui/icons-material/Edit';
-import { AuthContext } from '../../context/AuthContext';
 import { fetchUsers } from '../../api/users';
-import { ChatContext } from '../../context/ChatProvider';
+import useAuthStore from '../../store/authStore';
+import useChatStore from '../../store/chatsListStore';
 
 const FloatingButton = ({ addChat }) => {
-    const { tokens, userId } = useContext(AuthContext);
+    const { tokens } = useAuthStore();
+    const userId = useAuthStore.getState().getUserId();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPrivate, setIsPrivate] = useState(true);
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const chatImageRef = useRef(null);
-    const { createChat } = useContext(ChatContext);
+    const { createChat } = useChatStore();
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -31,6 +33,12 @@ const FloatingButton = ({ addChat }) => {
     }, [tokens]);
 
     const handleCreateChat = async () => {
+        if (!tokens || !tokens.access) {
+            console.error('Токены отсутствуют или недействительны');
+            alert('Авторизуйтесь заново');
+            return;
+        }
+
         if (!selectedUser) {
             alert('Выберите собеседника');
             return;
@@ -51,7 +59,7 @@ const FloatingButton = ({ addChat }) => {
 
 
         try {
-            const newChat = await createChat(chatData);
+            const newChat = await createChat(chatData, tokens);
             addChat(newChat.title, newChat.avatar, [userId, selectedUser.id], true);
             setIsModalOpen(false);
             setSelectedUser(null);
