@@ -15,17 +15,42 @@ export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 
     }
 };
 
-export const sendMessageApi = async (chatId, message, accessToken) => {
+
+export const sendMessageApi = async (chatId, message, voice, files, accessToken) => {
     try {
+        if (!accessToken || typeof accessToken !== 'string') {
+            console.error('Invalid access token:', accessToken);
+            throw new Error('Токен авторизации недействителен.');
+        }
+
+        const formData = new FormData();
+        formData.append('chat', chatId);
+
+        if (message) formData.append('text', message);
+
+        if (voice) formData.append('voice', voice);
+        console.log(voice)
+
+        if (files && files.length > 0) {
+            files.forEach(file => {
+                formData.append('files', file);
+            });
+        }
+
+        console.log('Request FormData:', Object.fromEntries(formData.entries()));
+
         const response = await fetch(`${BASE_URL}/api/messages/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ text: message, chat: chatId }),
+            body: formData,
         });
-        if (!response.ok) throw new Error(`Не удалось отправить сообщение. Код ошибки: ${response.status}`);
+
+        if (!response.ok) {
+            throw new Error(`Не удалось отправить сообщение. Код ошибки: ${response.status}`);
+        }
+
         return response.json();
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);

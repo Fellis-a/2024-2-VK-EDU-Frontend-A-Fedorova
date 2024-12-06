@@ -5,15 +5,13 @@ import useChats from '../../context/useChats';
 import { HeaderChatList } from '../../components/Header';
 import FloatingButton from '../../components/FloatingButton';
 import useAuth from '../../context/useAuth';
-import { AuthContext } from '../../context/AuthContext';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ChatList = ({ onChatSelect }) => {
     const { chats, createChat } = useChats();
-    const { currentUser } = useAuth();
+    const { tokens, currentUser } = useAuth();
     const chatArray = Array.isArray(chats) ? chats : [];
-    const { tokens } = useContext(AuthContext); // Получаем токены
     const navigate = useNavigate();
 
     useEffect(() => {

@@ -3,6 +3,8 @@
     flex-direction: column;
     padding: 0;
     margin: 0;
+    overflow-y: auto;
+    max-height: 100vh;
 }
 
 .chatItem {
@@ -15,7 +17,7 @@
 
     &:hover {
         background-color: var(--color-light-gray);
-        transform: scale(1.005);
+        transform: scale(1.0005);
     }
 }
 

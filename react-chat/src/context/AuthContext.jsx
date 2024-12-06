@@ -27,8 +27,6 @@ export function AuthProvider({ children }) {
         }
     }, [tokens]);
 
-
-
     const refreshTokens = async () => {
         if (refreshing) return;
         setRefreshing(true);
@@ -46,9 +44,11 @@ export function AuthProvider({ children }) {
         }
     };
 
-
     const fetchCurrentUser = async () => {
-        if (!tokens?.access) return;
+        if (!tokens?.access) {
+            console.error('No access token available');
+            return;
+        }
         try {
             const response = await fetch(`${BASE_URL}/api/user/current/`, {
                 method: 'GET',
@@ -76,7 +76,6 @@ export function AuthProvider({ children }) {
         }
     };
 
-
     useEffect(() => {
         if (tokens?.access) {
             fetchCurrentUser();
@@ -88,9 +87,13 @@ export function AuthProvider({ children }) {
 
         const accessPayload = JSON.parse(atob(tokens.access.split('.')[1]));
         const expiryTime = accessPayload.exp * 1000 - 60000;
+
         const timeout = setTimeout(async () => {
             try {
-                await refreshTokens();
+                const newTokens = await refreshTokens();
+                if (newTokens) {
+                    console.log('Tokens refreshed successfully');
+                }
             } catch (error) {
                 console.error('Token refresh failed:', error);
             }
@@ -98,7 +101,6 @@ export function AuthProvider({ children }) {
 
         return () => clearTimeout(timeout);
     }, [tokens]);
-
 
     return (
         <AuthContext.Provider value={{ tokens, setTokens, userId, firstName, refreshTokens }}>

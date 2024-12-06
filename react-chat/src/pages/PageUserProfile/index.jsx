@@ -85,81 +85,83 @@ const UserProfile = () => {
     };
 
     return (
-        <div className={styles.userProfile}>
+        <div className={styles.profile}>
             <HeaderProfile onSave={handleSave} />
-            <div className={styles.profileContent}>
-                <div className={styles.profileImage}>
-                    <img
-                        src={typeof profileImage === 'string' ? profileImage : URL.createObjectURL(profileImage)}
-                        alt="Profile"
-                    />
-                    <div className={styles.fileInputContainer}>
-                        <label htmlFor="profileImage" className={styles.fileInputLabel}>
-                            Choose File
-                        </label>
-                        <input
-                            type="file"
-                            id="profileImage"
-                            accept="image/*"
-                            ref={profileImageRef}
-                            onChange={handleFileChange}
-                            className={styles.fileInput}
+            <div className={styles.userProfile}>
+                {showSuccessMessage && <p className={styles.successMessage}>Профиль успешно сохранён!</p>}
+                <div className={styles.profileContent}>
+                    <div className={styles.profileImage}>
+                        <img
+                            src={typeof profileImage === 'string' ? profileImage : URL.createObjectURL(profileImage)}
+                            alt="Profile"
                         />
+                        <div className={styles.fileInputContainer}>
+                            <label htmlFor="profileImage" className={styles.fileInputLabel}>
+                                Choose File
+                            </label>
+                            <input
+                                type="file"
+                                id="profileImage"
+                                accept="image/*"
+                                ref={profileImageRef}
+                                onChange={handleFileChange}
+                                className={styles.fileInput}
+                            />
 
 
+                        </div>
                     </div>
+
+                    <label className={styles.label} htmlFor="firstName">Имя <span className={styles.required}>*</span></label>
+                    <input
+                        type="text"
+                        id="firstName"
+                        value={firstName}
+                        onChange={handleInputChange(setFirstName, "firstName")}
+                        placeholder="Введите имя"
+                        className={styles.textField}
+                    />
+                    <p className={`${styles.error} ${errors.firstName ? '' : styles.hidden}`}>
+                        {errors.firstName || " "}
+                    </p>
+
+                    <label className={styles.label} htmlFor="lastName">Фамилия <span className={styles.required}>*</span></label>
+                    <input
+                        type="text"
+                        id="lastName"
+                        value={lastName}
+                        onChange={handleInputChange(setLastName, "lastName")}
+                        placeholder="Введите фамилию"
+                        className={styles.textField}
+                    />
+                    <p className={`${styles.error} ${errors.lastName ? '' : styles.hidden}`}>
+                        {errors.lastName || " "}
+                    </p>
+
+                    <label className={styles.label} htmlFor="username">Username <span className={styles.required}>*</span></label>
+                    <input
+                        type="text"
+                        id="username"
+                        value={username}
+                        onChange={handleInputChange(setUsername, "username")}
+                        placeholder="Введите username"
+                        className={styles.textField}
+                    />
+                    <p className={`${styles.error} ${errors.username ? '' : styles.hidden}`}>
+                        {errors.username || " "}
+                    </p>
+
+                    <label className={styles.label} htmlFor="bio">О себе</label>
+                    <textarea
+                        id="bio"
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Расскажите о себе"
+                        className={styles.textArea}
+                    />
                 </div>
 
-                <label className={styles.label} htmlFor="firstName">Имя <span className={styles.required}>*</span></label>
-                <input
-                    type="text"
-                    id="firstName"
-                    value={firstName}
-                    onChange={handleInputChange(setFirstName, "firstName")}
-                    placeholder="Введите имя"
-                    className={styles.textField}
-                />
-                <p className={`${styles.error} ${errors.firstName ? '' : styles.hidden}`}>
-                    {errors.firstName || " "}
-                </p>
-
-                <label className={styles.label} htmlFor="lastName">Фамилия <span className={styles.required}>*</span></label>
-                <input
-                    type="text"
-                    id="lastName"
-                    value={lastName}
-                    onChange={handleInputChange(setLastName, "lastName")}
-                    placeholder="Введите фамилию"
-                    className={styles.textField}
-                />
-                <p className={`${styles.error} ${errors.lastName ? '' : styles.hidden}`}>
-                    {errors.lastName || " "}
-                </p>
-
-                <label className={styles.label} htmlFor="username">Username <span className={styles.required}>*</span></label>
-                <input
-                    type="text"
-                    id="username"
-                    value={username}
-                    onChange={handleInputChange(setUsername, "username")}
-                    placeholder="Введите username"
-                    className={styles.textField}
-                />
-                <p className={`${styles.error} ${errors.username ? '' : styles.hidden}`}>
-                    {errors.username || " "}
-                </p>
-
-                <label className={styles.label} htmlFor="bio">О себе</label>
-                <textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Расскажите о себе"
-                    className={styles.textArea}
-                />
             </div>
-
-            {showSuccessMessage && <p className={styles.successMessage}>Профиль успешно сохранён!</p>}
         </div>
     );
 };

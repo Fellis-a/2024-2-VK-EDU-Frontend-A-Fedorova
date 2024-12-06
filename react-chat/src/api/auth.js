@@ -18,9 +18,16 @@ export async function registerUser(userData) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Registration error details:", errorData);
-            throw new Error('Registration failed');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                console.error("Registration error details:", errorData);
+                throw { message: 'Registration failed', details: errorData };
+            } else {
+                const errorText = await response.text();
+                console.error("Unexpected error response:", errorText);
+                throw { message: 'Unexpected error', details: errorText };
+            }
         }
 
         return await response.json();
@@ -40,7 +47,16 @@ export async function loginUser(credentials) {
             body: JSON.stringify(credentials),
         });
         if (!response.ok) {
-            throw new Error('Login failed');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                console.error("Login error details:", errorData);
+                throw { message: 'Login failed', details: errorData };
+            } else {
+                const errorText = await response.text();
+                console.error("Unexpected error response:", errorText);
+                throw { message: 'Unexpected error', details: errorText };
+            }
         }
 
         const data = await response.json();
@@ -48,12 +64,32 @@ export async function loginUser(credentials) {
         const tokens = { ...data, userId: data.user_id };
         localStorage.setItem('tokens', JSON.stringify(tokens));
 
+        if (!data.user_id) {
+            const userResponse = await fetch(`${BASE_URL}/api/user/current/`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${data.access}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (userResponse.ok) {
+                const user = await userResponse.json();
+                tokens.userId = user.id;
+                localStorage.setItem('tokens', JSON.stringify(tokens));
+                console.log('User data fetched:', user);
+            } else {
+                console.error('Failed to fetch user data');
+            }
+        }
+
         return tokens;
     } catch (error) {
         console.error('Login error:', error);
         throw error;
     }
 }
+
 
 export const refreshToken = async (refreshToken) => {
     try {

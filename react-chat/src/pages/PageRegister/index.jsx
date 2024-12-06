@@ -35,45 +35,35 @@ function Register() {
 
         try {
             await registerUser({ ...formData, avatar });
-            console.log('User registered successfully');
+
             toast.success('Красавчик, теперь войди в свой аккаунт!');
             navigate('/login');
         } catch (error) {
             console.error('Error during registration:', error);
-            if (error.response) {
-                const { data, status } = error.response;
 
-                if (data && typeof data === 'object') {
-                    Object.keys(data).forEach((field) => {
-                        data[field].forEach((errorMessage) => {
-                            toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${errorMessage}`);
+            if (error.details && typeof error.details === 'object') {
+                Object.entries(error.details).forEach(([field, messages]) => {
+                    if (Array.isArray(messages)) {
+                        messages.forEach((message) => {
+                            const formattedField = formatFieldName(field);
+                            toast.error(`${formattedField}: ${message}`);
                         });
-                    });
-                }
-
-                switch (status) {
-                    case 400:
-                        toast.error('Плохой запрос. Попробуйте ещё раз!');
-                        break;
-                    case 403:
-                        toast.error('У вас нет прав для выполнения этой операции!');
-                        break;
-                    case 404:
-                        toast.error('Страница не найдена!');
-                        break;
-                    case 429:
-                        toast.error('Слишком много запросов. Попробуйте позже!');
-                        break;
-                    case 500:
-                        toast.error('Ошибка на сервере. Попробуйте позже!');
-                        break;
-                    default:
-                        toast.error('Что-то пошло не так. Попробуйте снова!');
-                }
+                    } else {
+                        const formattedField = formatFieldName(field);
+                        toast.error(`${formattedField}: ${messages}`);
+                    }
+                });
+            } else if (error.details) {
+                toast.error(error.details);
             } else {
-                toast.error('Нет связи с сервером. Попробуйте позже!');
+                toast.error('Ошибка регистрации! Попробуйте еще раз.');
             }
         }
+    };
+
+    const formatFieldName = (field) => {
+        const formatted = field.replace(/_/g, ' ');
+        return formatted.charAt(0).toUpperCase() + formatted.slice(1);
     };
 
     return (

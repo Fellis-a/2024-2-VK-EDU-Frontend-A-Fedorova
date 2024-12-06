@@ -22,6 +22,7 @@ body {
     font-weight: 400;
     line-height: 20px;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 :root {
@@ -127,20 +128,24 @@ body {
 
 .chatInput {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border-radius: 10px;
     border: 1px solid var(--color-light-gray);
     font-size: 16px;
 }
 
 .chatBtnSend {
-    padding: 10px 20px;
+    padding: 10px 10px;
     color: var(--color-white);
     background-color: var(--color-sent-message);
     border: none;
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
+    line-height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chatBtnSend:hover {
@@ -182,4 +187,52 @@ body {
 
 .icon {
     margin-left: 10px;
+}
+
+.messageFiles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.messageImage {
+    max-width: 100%;
+    max-height: 300px;
+    margin-top: 10px;
+}
+
+.chatMessages.dragging {
+    border: 2px dashed #00f;
+    background-color: #f0f8ff;
+}
+
+.voiceMessage {
+    margin-top: 5px;
+    border-radius: 10px;
+
+    &::-webkit-media-controls-panel {
+        background-color: var(--color-white);
+        border-radius: 5px;
+    }
+
+    @media (max-width: 600px) {
+        width: 150px;
+    }
+}
+
+.sent .geoLink {
+    color: var(--color-white);
+}
+
+.sent .geoLink:hover {
+    text-decoration: underline;
+}
+
+
+.received .geoLink {
+    color: var(--color-black);
+}
+
+.received .geoLink:hover {
+    text-decoration: underline;
 }

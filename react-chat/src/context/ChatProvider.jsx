@@ -4,15 +4,17 @@ import { fetchChats, sendMessageApi, fetchMessages } from '../api/chats';
 import { AuthContext } from './AuthContext';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+import { connect, disconnect } from '../api/centrifugo';
+
 export const ChatContext = createContext();
 
 const ChatProvider = ({ children }) => {
-    const { tokens, userId, firstName } = useContext(AuthContext);
+    const { tokens, userId } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState({});
     const [loading, setLoading] = useState(true);
-    const [pollingInterval] = useState(5000);
+    const [subscription, setSubscription] = useState(null);
 
 
     useEffect(() => {
@@ -28,7 +30,6 @@ const ChatProvider = ({ children }) => {
         }
     }, []);
 
-
     useEffect(() => {
         if (tokens?.access) {
             const loadChats = async () => {
@@ -37,12 +38,27 @@ const ChatProvider = ({ children }) => {
                     const chatsWithLastMessages = await Promise.all(
                         data.results.map(async (chat) => {
                             const messagesData = await fetchMessages(chat.id, tokens.access);
-                            const lastMessage = messagesData.results[messagesData.results.length - 1];
+                            const sortedMessages = (messagesData.results || []).sort(
+                                (a, b) => new Date(a.created_at) - new Date(b.created_at)
+                            );
+                            const lastMessage = sortedMessages[sortedMessages.length - 1];
 
                             return {
                                 ...chat,
-                                lastMessage: lastMessage ? lastMessage.text : 'Нет сообщений',
-                                lastMessageTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                                avatar: chat.avatar || '/default-avatar.png',
+                                lastMessage: lastMessage
+                                    ? lastMessage.text ||
+                                    (lastMessage.voice ? '[Голосовое сообщение]' : '') ||
+                                    (lastMessage.files?.length ? '[Изображение]' : 'Нет сообщений')
+                                    : 'Нет сообщений',
+
+                                lastMessageTime: lastMessage
+                                    ? new Date(lastMessage.created_at).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })
+                                    : '',
+
                             };
                         })
                     );
@@ -61,6 +77,7 @@ const ChatProvider = ({ children }) => {
     }, [tokens]);
 
 
+
     const selectChat = async (chatId) => {
         const chat = chats.find((chat) => chat.id === chatId);
         if (chat) {
@@ -77,9 +94,11 @@ const ChatProvider = ({ children }) => {
                         text: msg.text,
                         time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         date: new Date(msg.created_at).toLocaleDateString(),
-
+                        files: msg.files || null,
+                        voice: msg.voice || null,
                     })),
                 }));
+
                 console.log(chatMessages)
                 const lastMessage = chatMessages[chatMessages.length - 1];
                 setChats((prevChats) =>
@@ -87,8 +106,17 @@ const ChatProvider = ({ children }) => {
                         c.id === chatId
                             ? {
                                 ...c,
-                                lastMessage: lastMessage ? lastMessage.text : 'Нет сообщений',
-                                lastMessageTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                                lastMessage: lastMessage
+                                    ? lastMessage.text ||
+                                    (lastMessage.voice ? '[Голосовое сообщение]' : '') ||
+                                    (lastMessage.files?.length ? '[Изображение]' : 'Нет сообщений')
+                                    : 'Нет сообщений',
+                                lastMessageTime: lastMessage
+                                    ? new Date(lastMessage.created_at).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })
+                                    : '',
                             }
                             : c
                     )
@@ -99,77 +127,91 @@ const ChatProvider = ({ children }) => {
         }
     };
 
-    // Периодический polling для обновления сообщений
+
     useEffect(() => {
-        let intervalId;
-        if (selectedChat) {
-            intervalId = setInterval(async () => {
-                try {
-                    const chatId = selectedChat.id;
-                    const data = await fetchMessages(chatId, tokens.access);
-                    const chatMessages = data.results || [];
+        if (tokens?.access && userId) {
+            const handleNewMessage = (data) => {
+                console.log('New message received from Centrifugo:', data);
 
-                    // Сортируем новые сообщения
-                    chatMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                if (data?.data?.event === 'create') {
+                    const newMessage = data.data.message;
+                    const chatId = newMessage.chat;
 
-                    setMessages((prevMessages) => ({
-                        ...prevMessages,
-                        [chatId]: chatMessages.map((msg) => ({
-                            senderId: msg.sender.id,
-                            senderName: msg.sender.first_name,
-                            text: msg.text,
-                            time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                            date: new Date(msg.created_at).toLocaleDateString(),
-                        })),
-                    }));
-                } catch (error) {
-                    console.error('Error fetching messages in polling:', error);
-                }
-            }, pollingInterval);
+                    setMessages((prevMessages) => {
+                        const chatMessages = prevMessages[chatId] || [];
 
-            return () => clearInterval(intervalId);
-        }
-    }, [selectedChat, pollingInterval, tokens]);
-
-
-    const sendMessage = async (chatId, messageText) => {
-        const newMessage = {
-            senderId: userId,
-            senderName: firstName || 'Вы',
-            text: messageText,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            date: new Date().toLocaleDateString(),
-        };
-
-        try {
-            await sendMessageApi(chatId, messageText, tokens.access);
-
-            setMessages((prevMessages) => {
-                const updatedMessages = {
-                    ...prevMessages,
-                    [chatId]: [...(prevMessages[chatId] || []), newMessage],
-                };
-                localStorage.setItem('messages', JSON.stringify(updatedMessages)); // сохраняем в localStorage
-                return updatedMessages;
-            });
-
-            setChats((prevChats) =>
-                prevChats.map((c) =>
-                    c.id === chatId
-                        ? {
-                            ...c,
-                            lastMessage: messageText,
-                            lastMessageTime: newMessage.time,
+                        if (chatMessages.some((msg) => msg.id === newMessage.id)) {
+                            console.log('Duplicate message detected, skipping.');
+                            return prevMessages;
                         }
-                        : c
-                )
-            );
+
+                        const updatedMessages = {
+                            ...prevMessages,
+                            [chatId]: [
+                                ...chatMessages,
+                                {
+                                    id: newMessage.id,
+                                    senderId: newMessage.sender.id,
+                                    senderName: newMessage.sender.first_name,
+                                    text: newMessage.text,
+                                    time: new Date(newMessage.created_at).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }),
+                                    date: new Date(newMessage.created_at).toLocaleDateString(),
+                                    files: newMessage.files || null,
+                                    voice: newMessage.voice || null,
+                                },
+                            ],
+                        };
+                        return updatedMessages;
+                    });
+
+                    setChats((prevChats) =>
+                        prevChats.map((chat) =>
+                            chat.id === chatId
+                                ? {
+                                    ...chat,
+                                    lastMessage: newMessage.text ||
+                                        (newMessage.voice ? '[Голосовое сообщение]' : '') ||
+                                        (newMessage.files?.length ? '[Изображение]' : 'Нет сообщений'),
+                                    lastMessageTime: new Date(newMessage.created_at).toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }),
+                                }
+                                : chat
+                        )
+                    );
+
+                }
+            };
+
+            if (!subscription) {
+                console.log('Subscribing to user channel...');
+                connect(userId, tokens.access, handleNewMessage);
+                setSubscription(true);
+            }
+
+            return () => {
+                if (subscription) {
+                    console.log('Unsubscribing from Centrifugo...');
+                    disconnect();
+                    setSubscription(null);
+                }
+            };
+        }
+    }, [tokens, userId, subscription]);
+
+
+    const sendMessage = async (chatId, messageText = '', files = null, voice = null) => {
+        try {
+            await sendMessageApi(chatId, messageText, voice, files, tokens?.access);
+            console.log('Сообщение успешно отправлено');
         } catch (error) {
-            console.error('Failed to send message:', error);
+            console.error('Ошибка отправки сообщения:', error);
         }
     };
-
-
 
 
     const createChat = async (chatData) => {

@@ -15,7 +15,7 @@ const HeaderChatList = () => {
 
     return (
         <header className={styles.headerMain}>
-            <BurgerMenu navItems={navItems} />
+            <BurgerMenu navItems={navItems} className={styles.burgerButton} />
             <h1 className={styles.headerTitleCenter}>Чаты</h1>
             <button className={styles.searchButton} >
                 <SearchIcon />
