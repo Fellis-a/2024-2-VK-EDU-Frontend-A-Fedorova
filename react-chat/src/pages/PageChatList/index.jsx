@@ -7,6 +7,7 @@ import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatsListStore';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Loader from '../../components/Loader';
 
 const ChatList = ({ onChatSelect }) => {
 
@@ -36,6 +37,13 @@ const ChatList = ({ onChatSelect }) => {
         return `${firstInitial}${lastInitial}`;
     }
 
+    if (refreshing || !tokens || chats.length === 0) {
+        return (
+            <div className={styles.loaderContainer}>
+                <Loader size="50px" color="var(--color-sent-message)" />
+            </div>
+        );
+    }
 
 
     return (

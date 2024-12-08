@@ -10,6 +10,7 @@ const useChatStore = create((set, get) => ({
     loading: false,
 
 
+
     loadChats: async (tokens) => {
         set({ loading: true });
         try {
@@ -24,7 +25,7 @@ const useChatStore = create((set, get) => ({
 
                     return {
                         ...chat,
-                        avatar: chat.avatar || '/default-avatar.png',
+                        avatar: chat.avatar,
                         lastMessage: lastMessage
                             ? lastMessage.text ||
                             (lastMessage.voice ? '[Голосовое сообщение]' : '') ||
@@ -50,12 +51,12 @@ const useChatStore = create((set, get) => ({
 
 
     selectChat: async (chatId, { access }) => {
+        set({ loading: true });
+
         if (!access) {
             console.error('Token not found!');
             return;
         }
-
-        console.log(chatId);
 
         const chat = get().chats.find((chat) => chat.id === chatId);
         if (chat) {
@@ -82,8 +83,17 @@ const useChatStore = create((set, get) => ({
                 }));
             } catch (error) {
                 console.error('Failed to load messages:', error);
+            } finally {
+                set({ loading: false });
             }
         }
+    },
+
+    deleteChat: (chatId) => {
+        set((state) => {
+            const newChats = state.chats.filter(chat => chat.id !== chatId);
+            return { chats: newChats };
+        });
     },
 
     setChats: (newChats) => set({ chats: newChats }),

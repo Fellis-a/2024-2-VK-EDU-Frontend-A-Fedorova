@@ -5,6 +5,7 @@ import { HeaderChat } from '../../components/Header';
 import { deleteChatApi } from '../../api/chats';
 import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatsListStore';
+import Loader from '../../components/Loader';
 
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -20,8 +21,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ChatItem = () => {
     const { chatId } = useParams();
     const [message, setMessage] = useState('');
-    const { chats, selectedChat, setSelectedChat, setChats, sendMessage, messages } = useChatStore();
-    const { tokens } = useAuthStore();
+    const { chats, selectedChat, setSelectedChat, deleteChat, sendMessage, messages, loading } = useChatStore();
+    const { tokens, refreshing } = useAuthStore();
     const userId = useAuthStore.getState().getUserId();
 
     const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
@@ -31,6 +32,7 @@ const ChatItem = () => {
     const mediaRecorderRef = useRef(null);
     const currentChat = chats.find((chat) => chat.id === chatId);
     const [isDragging, setIsDragging] = useState(false);
+    const [setIsLoading] = useState(false);
     const navigate = useNavigate();
 
 
@@ -39,33 +41,17 @@ const ChatItem = () => {
             console.error('Токен не найден!');
             return;
         }
-        if (message.trim()) {
+        setIsLoading(true);
+        try {
             sendMessage(chatId, message.trim(), null, null, tokens?.access);
             setMessage('');
+        } catch (error) {
+            console.error('Ошибка отправки сообщения:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // const handleDeleteChat = async () => {
-    //     if (!selectedChat) return;
-
-    //     console.log("Deleting chat:", selectedChat.id);
-
-    //     try {
-    //         await deleteChatApi(selectedChat.id, tokens.access);
-    //         console.log('Chat deleted successfully');
-    //         setChats((prevChats) => {
-    //             const updatedChats = prevChats.filter((chat) => chat.id !== selectedChat.id);
-    //             console.log('Updated chats:', updatedChats);  // Логируем обновленный список чатов
-    //             return updatedChats;
-    //         });
-    //         setSelectedChat(null);
-    //         alert('Чат успешно удален.');
-    //         navigate('/');
-    //     } catch (error) {
-    //         console.error('Ошибка удаления чата:', error);
-    //         alert('Не удалось удалить чат.');
-    //     }
-    // };
 
     const handleDeleteChat = async () => {
         if (!selectedChat) return;
@@ -73,7 +59,7 @@ const ChatItem = () => {
         try {
             await deleteChatApi(selectedChat.id, tokens.access);
 
-            setChats((prevChats) => prevChats.filter((chat) => chat.id !== selectedChat.id));
+            deleteChat(selectedChat.id);
             setSelectedChat(null);
             alert('Чат успешно удален.');
             navigate('/');
@@ -300,6 +286,16 @@ const ChatItem = () => {
             handleSendVoice();
         }
     }, [voiceBlob]);
+
+
+    if (loading || refreshing || !tokens) {
+        return (
+            <div className={styles.loaderContainer}>
+                <Loader size="50px" color="pink" />
+            </div>
+        );
+    }
+
 
     return (
         <div className={styles.chatItem}>

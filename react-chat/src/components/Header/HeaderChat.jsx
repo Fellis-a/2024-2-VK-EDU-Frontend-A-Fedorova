@@ -20,13 +20,27 @@ const HeaderChat = ({ title, avatarUrl, onDeleteChat }) => {
         }
     };
 
+    const getInitials = (name) => {
+        if (!name) return '??';
+        return name
+            .split(' ')
+            .map((word) => word[0]?.toUpperCase())
+            .join('');
+    };
+
     return (
         <header className={styles.headerChat}>
             <div className={styles.chatActions}>
                 <Link to="/" className={styles.backButton}>
                     <ArrowBackIosNewIcon />
                 </Link>
-                <img src={avatarUrl} alt={title} className={styles.chatAvatar} />
+                {avatarUrl ? (
+                    <img src={avatarUrl} alt={title} className={styles.chatAvatar} />
+                ) : (
+                    <div className={styles.initials}>
+                        {getInitials(title)}
+                    </div>
+                )}
                 <div className={styles.chatInfo}>
                     <h1 className={styles.headerTitle}>{title}</h1>
                     <p className={styles.chatLastSeen}>Был(-а) недавно</p>
@@ -55,8 +69,7 @@ const HeaderChat = ({ title, avatarUrl, onDeleteChat }) => {
 
 HeaderChat.propTypes = {
     title: PropTypes.string.isRequired,
-    avatarUrl: PropTypes.string.isRequired,
+    avatarUrl: PropTypes.string,
     onDeleteChat: PropTypes.func.isRequired,
 };
-
 export default HeaderChat;
