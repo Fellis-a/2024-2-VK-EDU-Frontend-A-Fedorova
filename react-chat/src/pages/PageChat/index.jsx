@@ -1,10 +1,11 @@
-import { useState, useContext, useEffect, useRef, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import { ChatContext } from '../../context/ChatProvider';
-import { AuthContext } from '../../context/AuthContext';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import styles from './ChatItem.module.scss';
-import useChats from '../../context/useChats';
 import { HeaderChat } from '../../components/Header';
+import { deleteChatApi } from '../../api/chats';
+import useAuthStore from '../../store/authStore';
+import useChatStore from '../../store/chatsListStore';
+import Loader from '../../components/Loader';
 
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -12,32 +13,58 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
+import ImageIcon from '@mui/icons-material/Image';
+
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const ChatItem = () => {
     const { chatId } = useParams();
     const [message, setMessage] = useState('');
-    const { sendMessage, messages } = useContext(ChatContext);
-    const { userId } = useContext(AuthContext);
+    const { chats, selectedChat, setSelectedChat, deleteChat, sendMessage, messages, loading } = useChatStore();
+    const { tokens, refreshing } = useAuthStore();
+    const userId = useAuthStore.getState().getUserId();
+
     const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
     const messagesEndRef = useRef(null);
     const [voiceBlob, setVoiceBlob] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef(null);
-    const { chats } = useChats();
-    const { tokens } = useContext(AuthContext);
     const currentChat = chats.find((chat) => chat.id === chatId);
     const [isDragging, setIsDragging] = useState(false);
+    const [setIsLoading] = useState(false);
+    const navigate = useNavigate();
+
 
     const handleSendMessage = () => {
         if (!tokens?.access) {
             console.error('Токен не найден!');
             return;
         }
-        if (message.trim()) {
-            sendMessage(chatId, message.trim(), null, null);
+        setIsLoading(true);
+        try {
+            sendMessage(chatId, message.trim(), null, null, tokens?.access);
             setMessage('');
+        } catch (error) {
+            console.error('Ошибка отправки сообщения:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    const handleDeleteChat = async () => {
+        if (!selectedChat) return;
+
+        try {
+            await deleteChatApi(selectedChat.id, tokens.access);
+
+            deleteChat(selectedChat.id);
+            setSelectedChat(null);
+            alert('Чат успешно удален.');
+            navigate('/');
+        } catch (error) {
+            console.error('Ошибка при удалении чата:', error);
         }
     };
 
@@ -48,7 +75,7 @@ const ChatItem = () => {
                 (position) => {
                     const { latitude, longitude } = position.coords;
                     const locationUrl = `https://www.openstreetmap.org/#map=18/${latitude}/${longitude}`;
-                    sendMessage(chatId, locationUrl, null, null);
+                    sendMessage(chatId, locationUrl, null, null, tokens?.access);
                     console.log("Отправка геолокации:", { chatId, locationUrl });
                 },
                 (error) => {
@@ -144,11 +171,7 @@ const ChatItem = () => {
             console.error('Ошибка при отправке голосового сообщения:', error);
         }
     };
-    const handleFileDrop = async (event) => {
-        event.preventDefault();
-        setIsDragging(false);
-
-        const files = Array.from(event.dataTransfer.files);
+    const handleFileUpload = async (files, message = '') => {
         if (!tokens?.access) {
             console.error('Токен не найден');
             return;
@@ -186,6 +209,22 @@ const ChatItem = () => {
             console.error('Ошибка при отправке файла:', error);
         }
     };
+
+
+    const handleFileDrop = async (event) => {
+        event.preventDefault();
+        setIsDragging(false);
+
+        const files = Array.from(event.dataTransfer.files);
+        await handleFileUpload(files, message);
+    };
+
+
+    const handleFileSelect = async (event) => {
+        const files = Array.from(event.target.files);
+        await handleFileUpload(files, message);
+    };
+
 
 
     const handleDragOver = (event) => {
@@ -248,9 +287,19 @@ const ChatItem = () => {
         }
     }, [voiceBlob]);
 
+
+    if (loading || refreshing || !tokens) {
+        return (
+            <div className={styles.loaderContainer}>
+                <Loader size="50px" color="pink" />
+            </div>
+        );
+    }
+
+
     return (
         <div className={styles.chatItem}>
-            <HeaderChat title={currentChat ? currentChat.title : 'Чат'} avatarUrl={currentChat ? currentChat.avatar : ''} />
+            <HeaderChat title={currentChat ? currentChat.title : 'Чат'} avatarUrl={currentChat ? currentChat.avatar : ''} onDeleteChat={handleDeleteChat} />
             <div
                 className={`${styles.chatMessages} ${isDragging ? styles.dragging : ''}`}
                 onDrop={handleFileDrop}
@@ -317,6 +366,15 @@ const ChatItem = () => {
                 <button onClick={handleVoiceButtonClick} className={styles.chatBtnSend}>
                     {isRecording ? <StopCircleIcon /> : <KeyboardVoiceIcon />}
                 </button>
+                <label htmlFor="fileUpload" className={styles.chatBtnSend}>
+                    <ImageIcon />
+                </label>
+                <input
+                    id="fileUpload"
+                    type="file"
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect}
+                />
             </footer>
         </div>
     );

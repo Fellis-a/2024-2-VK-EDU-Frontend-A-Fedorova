@@ -2,10 +2,12 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import styles from './BurgerMenu.module.scss';
+import useAuthStore from '../../store/authStore';
 
 const BurgerMenu = ({ navItems }) => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+    const { clearTokens } = useAuthStore();
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -15,6 +17,12 @@ const BurgerMenu = ({ navItems }) => {
     const handleNavClick = (link) => {
         navigate(link);
         toggleMenu();
+    };
+
+    const handleLogout = () => {
+        clearTokens();
+        toggleMenu();
+        navigate('/login');
     };
 
     return (
@@ -42,6 +50,12 @@ const BurgerMenu = ({ navItems }) => {
                         {item.label}
                     </div>
                 ))}
+                <div
+                    className={`${styles.headerNavItem} ${styles.logout}`}
+                    onClick={handleLogout}
+                >
+                    Выйти
+                </div>
             </nav>
         </div>
     );

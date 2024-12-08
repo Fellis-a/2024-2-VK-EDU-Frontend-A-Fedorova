@@ -59,3 +59,34 @@ export const updateUserProfile = async (uuid, formData, tokens, refreshTokens) =
         throw error;
     }
 };
+
+
+export const deleteUserAccount = async (uuid, tokens, refreshTokens) => {
+    if (!tokens?.access) throw new Error('Access token not available');
+
+    try {
+        const response = await fetch(`${BASE_URL}/api/user/${uuid}/`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${tokens.access}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            return { success: true };
+        }
+
+        if (response.status === 401) {
+            const newTokens = await refreshTokens();
+            if (newTokens) {
+                return deleteUserAccount(uuid, newTokens, refreshTokens);
+            }
+        }
+
+        throw new Error('Failed to delete user account');
+    } catch (error) {
+        console.error('Error deleting user account:', error);
+        throw error;
+    }
+};

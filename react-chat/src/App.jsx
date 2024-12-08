@@ -1,20 +1,44 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthContext } from './context/AuthContext';
 import ChatList from './pages/PageChatList';
 import ChatItem from './pages/PageChat';
 import UserProfile from './pages/PageUserProfile';
 import Login from './pages/PageLogin';
 import Register from './pages/PageRegister';
 import NotFound from './components/NotFound';
-import useChats from './context/useChats';
+import useAuthStore from './store/authStore';
+
+import useChatStore from './store/chatsListStore';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
-  const { tokens } = useContext(AuthContext);
-  const { createChat, selectChat } = useChats();
+  const { tokens, currentUser, } = useAuthStore();
+  const { createChat, selectChat } = useChatStore();
+  console.log('Tokens in appjs:', tokens);
+  const { subscribeToChannel, unsubscribeFromChannel } = useChatStore();
+  const { fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    if (tokens && !currentUser) {
+      fetchCurrentUser();
+    }
+  }, [tokens, currentUser]);
+
+  useEffect(() => {
+    if (tokens && currentUser?.id) {
+      subscribeToChannel(currentUser.id, tokens);
+
+      return () => {
+        unsubscribeFromChannel();
+      };
+    } else {
+      console.log("User is not logged in or no user ID found");
+    }
+  }, [tokens, currentUser, subscribeToChannel, unsubscribeFromChannel]);
+
+
 
   useEffect(() => {
     if (tokens) {
@@ -29,8 +53,17 @@ const App = () => {
   };
 
   const handleChatSelect = (chatId) => {
-    selectChat(chatId);
+
+    const token = tokens?.access;
+    if (!token) {
+      console.error('Token not found!');
+      return;
+    }
+
+    selectChat(chatId, { access: token });
   };
+
+
 
   return (
     <div className="app">
@@ -43,7 +76,7 @@ const App = () => {
               createChat={handleCreateChat}
             />
           ) : (
-            <Navigate to="/login" />
+            <Navigate to="/login" replace />
           )}
         />
         <Route path="/chat/:chatId" element={<ChatItem />} />
