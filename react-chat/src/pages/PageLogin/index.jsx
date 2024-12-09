@@ -1,10 +1,11 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { loginUser } from '../../api/auth';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageLogin.module.scss';
 import { toast } from 'react-toastify';
+
 
 function Login() {
     const [credentials, setCredentials] = useState({
@@ -12,7 +13,7 @@ function Login() {
         password: ''
     });
 
-    const { setTokens } = useContext(AuthContext);
+    const { setTokens, fetchCurrentUser } = useAuthStore();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -26,10 +27,12 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+
             const tokens = await loginUser(credentials);
             setTokens(tokens);
             console.log('User logged in successfully:', tokens);
             toast.success('Вы успешно вошли в систему!');
+            await fetchCurrentUser();
             navigate('/');
         } catch (error) {
             console.error('Error during login:', error);
@@ -55,6 +58,7 @@ function Login() {
             }
         }
     };
+
 
     return (
         <div className={styles.authPageContainer}>
