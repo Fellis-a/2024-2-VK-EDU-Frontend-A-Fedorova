@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { registerUser } from '../../api/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import styles from './PageRegister.module.scss';
 import { toast } from 'react-toastify';
+import useAuthStore from '../../store/authStore';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ function Register() {
     });
     const [avatar, setAvatar] = useState(null);
     const navigate = useNavigate();
+    const { tokens } = useAuthStore();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -65,6 +67,16 @@ function Register() {
         const formatted = field.replace(/_/g, ' ');
         return formatted.charAt(0).toUpperCase() + formatted.slice(1);
     };
+
+    const isTokenValid = () => {
+        if (!tokens?.access) return false;
+        const { exp } = JSON.parse(atob(tokens.access.split('.')[1]));
+        return Date.now() < exp * 1000;
+    };
+
+    if (isTokenValid()) {
+        return <Navigate to="/" replace />;
+    }
 
     return (
         <div className={styles.authPageContainer}>
