@@ -19,25 +19,59 @@
     margin: 0 auto;
 }
 
-
 .profileImage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
     position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 15px;
+    overflow: hidden;
 
-    img {
-        width: 100px;
-        height: 100px;
-        border-radius: 15px;
+    .profileImagePicture {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        border: none;
-        filter: grayscale(100%);
+        filter: brightness(70%);
+        transition: filter 0.3s ease;
     }
 
+    .profileImageOverlay {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        opacity: 0.9;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
 
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .uploadText {
+        position: absolute;
+        z-index: 1;
+        text-shadow: 2px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+
+    &:hover .profileImagePicture {
+        filter: brightness(50%);
+    }
 }
+
+.fileInput {
+    display: none;
+}
+
 
 .label {
     align-self: flex-start;
@@ -165,38 +199,8 @@
     height: 5px;
 }
 
-.successMessage {
-    color: green;
-    font-size: 16px;
-    text-align: center;
-    margin-top: 20px;
-}
-
 .hidden {
     visibility: hidden;
-}
-
-
-.fileInputContainer {
-    width: 100%;
-    margin-bottom: 15px;
-
-}
-
-.fileInputLabel {
-    padding: 10px;
-    background-color: var(--color-gray);
-    color: var(--color-white);
-    border-radius: 4px;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-}
-
-
-
-.fileInput {
-    display: none;
 }
 
 .deleteAccount {

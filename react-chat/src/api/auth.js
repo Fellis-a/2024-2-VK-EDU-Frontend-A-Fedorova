@@ -1,4 +1,5 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import useAuthStore from '../store/authStore';
 
 export async function registerUser(userData) {
     const formData = new FormData();
@@ -93,7 +94,7 @@ export async function loginUser(credentials) {
 
 export const refreshToken = async (refreshToken) => {
     try {
-        const response = await fetch(`${BASE_URL}/api/auth/refresh/`, {
+        const response = await authFetch(`${BASE_URL}/api/auth/refresh/`, {
             method: 'POST',
             headers: {
 
@@ -112,4 +113,26 @@ export const refreshToken = async (refreshToken) => {
         console.error('Refresh token error:', error);
         throw error;
     }
+};
+
+
+export const authFetch = async (url, options = {}) => {
+    const { tokens, refreshTokens } = useAuthStore.getState();
+
+    if (!tokens?.access) throw new Error('No access token');
+
+    const { exp } = JSON.parse(atob(tokens.access.split('.')[1]));
+    if (Date.now() > exp * 1000) {
+        await refreshTokens();
+    }
+
+    const updatedTokens = useAuthStore.getState().tokens;
+
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${updatedTokens.access}`,
+        },
+    });
 };
