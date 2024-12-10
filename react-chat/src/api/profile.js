@@ -1,9 +1,11 @@
+import { authFetch } from './auth.js';
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getUserProfile = async (tokens, refreshTokens) => {
     if (!tokens?.access) throw new Error('Access token not available');
     try {
-        const response = await fetch(`${BASE_URL}/api/user/current/`, {
+        const response = await authFetch(`${BASE_URL}/api/user/current/`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${tokens.access}`,
@@ -33,7 +35,7 @@ export const updateUserProfile = async (uuid, formData, tokens, refreshTokens) =
     if (!tokens?.access) throw new Error('Access token not available');
 
     try {
-        const response = await fetch(`${BASE_URL}/api/user/${uuid}/`, {
+        const response = await authFetch(`${BASE_URL}/api/user/${uuid}/`, {
             method: 'PATCH',
             headers: {
                 Authorization: `Bearer ${tokens.access}`,
@@ -65,7 +67,7 @@ export const deleteUserAccount = async (uuid, tokens, refreshTokens) => {
     if (!tokens?.access) throw new Error('Access token not available');
 
     try {
-        const response = await fetch(`${BASE_URL}/api/user/${uuid}/`, {
+        const response = await authFetch(`${BASE_URL}/api/user/${uuid}/`, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${tokens.access}`,

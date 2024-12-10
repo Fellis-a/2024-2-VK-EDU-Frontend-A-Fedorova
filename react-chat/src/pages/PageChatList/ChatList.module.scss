@@ -119,9 +119,10 @@ a {
         padding: 12px;
     }
 
-    .chatAvatar {
-        width: 40px;
-        height: 40px;
+    .chatAvata,
+    .chatAvatarFallback {
+        width: 50px;
+        height: 50px;
         margin-right: 10px;
     }
 

@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import styles from './ChatList.module.scss';
 import { Link } from 'react-router-dom';
 import { HeaderChatList } from '../../components/Header';
@@ -9,27 +9,27 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader';
 
-const ChatList = ({ onChatSelect }) => {
+const ChatList = () => {
 
-    const { chats, loadChats, createChat } = useChatStore();
+    const { chats, loadChats, createChat, selectChat } = useChatStore();
     const { tokens, currentUser, refreshing, refreshTokens } = useAuthStore();
     const navigate = useNavigate();
 
+
     useEffect(() => {
-        if (!tokens?.access) {
-            if (!refreshing) {
-                refreshTokens().then((newTokens) => {
-                    if (newTokens) {
-                        loadChats(newTokens);
-                    } else {
-                        navigate('/login');
-                    }
-                });
-            }
-        } else {
+        if (!tokens?.access && !refreshing) {
+            refreshTokens().then((newTokens) => {
+                if (newTokens) {
+                    if (chats.length === 0) loadChats(newTokens);
+                } else {
+                    navigate('/login');
+                }
+            });
+        } else if (tokens?.access && chats.length === 0) {
             loadChats(tokens);
         }
-    }, [tokens, refreshing, loadChats, navigate, refreshTokens]);
+    }, [tokens, refreshing, chats, loadChats, refreshTokens, navigate]);
+
 
     function getInitials(firstName, lastName) {
         const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
@@ -76,7 +76,7 @@ const ChatList = ({ onChatSelect }) => {
                             <Link
                                 className={styles.chatItem}
                                 key={chat.id}
-                                onClick={() => onChatSelect(chat.id)}
+                                onClick={() => selectChat(chat.id, { access: tokens.access })}
                                 to={`/chat/${chat.id}`}
                             >
                                 {avatarUrl ? (
@@ -114,8 +114,5 @@ const ChatList = ({ onChatSelect }) => {
     );
 };
 
-ChatList.propTypes = {
-    onChatSelect: PropTypes.func.isRequired,
-};
 
 export default ChatList;

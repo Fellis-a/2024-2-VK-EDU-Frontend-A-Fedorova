@@ -104,47 +104,43 @@ const useChatStore = create((set, get) => ({
         if (data?.data?.event === 'create') {
             const newMessage = data.data.message;
             const chatId = newMessage.chat;
+
             set((prevState) => {
                 const chatMessages = prevState.messages[chatId] || [];
                 if (chatMessages.some((msg) => msg.id === newMessage.id)) {
                     return prevState;
                 }
 
-                const updatedMessages = {
-                    ...prevState.messages,
-                    [chatId]: [
-                        ...chatMessages,
-                        {
-                            id: newMessage.id,
-                            senderId: newMessage.sender.id,
-                            senderName: newMessage.sender.first_name,
-                            text: newMessage.text,
-                            time: new Date(newMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                            date: new Date(newMessage.created_at).toLocaleDateString(),
-                            files: newMessage.files || null,
-                            voice: newMessage.voice || null,
-                        },
-                    ],
+                return {
+                    messages: {
+                        ...prevState.messages,
+                        [chatId]: [
+                            ...chatMessages,
+                            {
+                                id: newMessage.id,
+                                senderId: newMessage.sender.id,
+                                senderName: newMessage.sender.first_name,
+                                text: newMessage.text,
+                                time: new Date(newMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                date: new Date(newMessage.created_at).toLocaleDateString(),
+                                files: newMessage.files || null,
+                                voice: newMessage.voice || null,
+                            },
+                        ],
+                    },
+                    chats: prevState.chats.map((chat) =>
+                        chat.id === chatId
+                            ? {
+                                ...chat,
+                                lastMessage: newMessage.text ||
+                                    (newMessage.voice ? '[Голосовое сообщение]' : '') ||
+                                    (newMessage.files?.length ? '[Изображение]' : ''),
+                                lastMessageTime: new Date(newMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            }
+                            : chat
+                    ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)),
                 };
-                return { messages: updatedMessages };
             });
-
-            set((prevState) =>
-                prevState.chats.map((chat) =>
-                    chat.id === chatId
-                        ? {
-                            ...chat,
-                            lastMessage: newMessage.text ||
-                                (newMessage.voice ? '[Голосовое сообщение]' : '') ||
-                                (newMessage.files?.length ? '[Изображение]' : 'Нет сообщений'),
-                            lastMessageTime: new Date(newMessage.created_at).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            }),
-                        }
-                        : chat
-                )
-            );
         }
     },
 
@@ -187,6 +183,11 @@ const useChatStore = create((set, get) => ({
 
 
     subscribeToChannel: (userId, tokens) => {
+        const subscription = get().subscription;
+        if (subscription) {
+            console.warn('Already subscribed');
+            return;
+        }
         connect(userId, tokens.access, get().handleNewMessage);
         set({ subscription: true });
     },

@@ -1,4 +1,5 @@
 import { Centrifuge } from 'centrifuge';
+import { authFetch } from './auth.js';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,7 +12,7 @@ const connect = (userId, token, callback) => {
     if (!centrifuge) {
         centrifuge = new Centrifuge(url, {
             getToken: () => {
-                return fetch(`${BASE_URL}/api/centrifugo/connect/`, {
+                return authFetch(`${BASE_URL}/api/centrifugo/connect/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -46,7 +47,7 @@ const connect = (userId, token, callback) => {
     if (!subscriptions[userId]) {
         const subscription = centrifuge.newSubscription(userId, {
             getToken: () => {
-                return fetch(`${BASE_URL}/api/centrifugo/subscribe/`, {
+                return authFetch(`${BASE_URL}/api/centrifugo/subscribe/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -62,6 +63,12 @@ const connect = (userId, token, callback) => {
                     });
             },
         });
+
+        if (subscriptions[userId]) {
+            console.warn('Subscription for this user already exists:', userId);
+            return;
+        }
+
 
         subscription.on('subscribed', () => {
             console.log('Successfully subscribed to user channel');
