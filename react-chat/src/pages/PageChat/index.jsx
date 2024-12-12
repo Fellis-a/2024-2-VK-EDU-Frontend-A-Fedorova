@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './ChatItem.module.scss';
 import { HeaderChat } from '../../components/Header';
@@ -7,6 +7,7 @@ import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatsListStore';
 import Loader from '../../components/Loader';
 import { authFetch } from '../../api/auth.js';
+import LazyImage from '../../components/LazyImage';
 
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -22,7 +23,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ChatItem = () => {
     const { chatId } = useParams();
     const [message, setMessage] = useState('');
-    const { chats, selectedChat, setSelectedChat, deleteChat, sendMessage, messages, loading } = useChatStore();
+    const { chats, selectedChat, setSelectedChat, deleteChat, sendMessage, messages, loading, loadingMessages } = useChatStore();
     const { tokens, refreshing } = useAuthStore();
     const userId = useAuthStore.getState().getUserId();
 
@@ -31,7 +32,7 @@ const ChatItem = () => {
     const [voiceBlob, setVoiceBlob] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef(null);
-    const currentChat = chats.find((chat) => chat.id === chatId);
+    const currentChat = useMemo(() => chats.find(chat => chat.id === chatId), [chats, chatId]);
     const [isDragging, setIsDragging] = useState(false);
     const navigate = useNavigate();
 
@@ -47,20 +48,18 @@ const ChatItem = () => {
         }
     }, [chatId, tokens, chats]);
 
-
-    const handleSendMessage = () => {
+    const handleSendMessage = useCallback(() => {
         if (!tokens?.access) {
             console.error('Токен не найден!');
             return;
         }
         try {
-            sendMessage(chatId, message.trim(), null, null, tokens?.access);
+            sendMessage(chatId, message.trim(), null, null, tokens.access);
             setMessage('');
         } catch (error) {
             console.error('Ошибка отправки сообщения:', error);
         }
-
-    };
+    }, [chatId, message, sendMessage, tokens]);
 
 
     const handleDeleteChat = async () => {
@@ -298,7 +297,7 @@ const ChatItem = () => {
     }, [voiceBlob]);
 
 
-    if (loading || refreshing || !tokens) {
+    if (loading || refreshing || !tokens || loadingMessages) {
         return (
             <div className={styles.loaderContainer}>
                 <Loader size="50px" color="pink" />
@@ -324,8 +323,14 @@ const ChatItem = () => {
                                 <span className={styles.sender}>{msg.senderName}</span>
                                 <div className={styles.messageContent}>
                                     {msg.files?.map((file, index) => (
-                                        <img key={index} src={file.item} alt="Uploaded content" className={styles.messageImage} />
+                                        <LazyImage
+                                            key={index}
+                                            src={file.item}
+                                            alt="Uploaded content"
+                                            className={styles.messageImage}
+                                        />
                                     ))}
+
 
                                     {typeof msg.text === 'string' && msg.text.startsWith('http') ? (
                                         <a className={styles.geoLink} href={msg.text} target="_blank" rel="noopener noreferrer">

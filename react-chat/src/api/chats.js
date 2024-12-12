@@ -2,7 +2,7 @@ import { authFetch } from './auth.js';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 10) => {
+export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 20) => {
     try {
         const response = await authFetch(`${BASE_URL}/api/chats/?search=${search}&page=${page}&page_size=${pageSize}`, {
             headers: {

@@ -11,31 +11,6 @@
     }
 }
 
-.hamburger {
-    display: none;
-    cursor: pointer;
-
-    .bar {
-        display: block;
-        width: 25px;
-        height: 3px;
-        margin: 5px auto;
-        transition: all 0.3s ease;
-        background-color: var(--color-black);
-    }
-
-    &.active .bar:nth-child(1) {
-        transform: translateY(8px) rotate(45deg);
-    }
-
-    &.active .bar:nth-child(2) {
-        opacity: 0;
-    }
-
-    &.active .bar:nth-child(3) {
-        transform: translateY(-8px) rotate(-45deg);
-    }
-}
 
 .headerTitleCenter {
     font-size: 24px;
@@ -64,20 +39,6 @@
         max-width: 150px;
     }
 }
-
-.headerNav {
-    display: none;
-
-    &.active {
-        display: flex;
-    }
-
-    .headerNavItem {
-        color: white;
-        padding: 20px;
-    }
-}
-
 
 
 .centerElement {
@@ -159,9 +120,17 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+
+    &:hover {
+        color: #653feb;
+    }
+
 }
 
 .moreButton {
@@ -171,6 +140,10 @@
     padding: 8px;
     display: flex;
     align-items: center;
+
+    &:hover {
+        color: #653feb;
+    }
 }
 
 .chatButtons {
@@ -194,10 +167,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
 
-.backButton {
-    border-color: #646cff;
+    &:hover {
+        color: #653feb;
+    }
 }
 
 .backButton:focus,

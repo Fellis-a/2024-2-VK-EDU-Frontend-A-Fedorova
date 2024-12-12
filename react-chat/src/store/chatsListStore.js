@@ -8,6 +8,7 @@ const useChatStore = create((set, get) => ({
     selectedChat: null,
     messages: {},
     loading: false,
+    loadingMessages: false,
 
 
 
@@ -15,6 +16,7 @@ const useChatStore = create((set, get) => ({
         set({ loading: true });
         try {
             const data = await fetchChats(tokens.access);
+            console.log('Загруженные чаты:', data);
             const chatsWithLastMessages = await Promise.all(
                 data.results.map(async (chat) => {
                     const messagesData = await fetchMessages(chat.id, tokens.access);
@@ -51,7 +53,7 @@ const useChatStore = create((set, get) => ({
 
 
     selectChat: async (chatId, { access }) => {
-        set({ loading: true });
+        set({ loadingMessages: true });
 
         if (!access) {
             console.error('Token not found!');
@@ -84,10 +86,12 @@ const useChatStore = create((set, get) => ({
             } catch (error) {
                 console.error('Failed to load messages:', error);
             } finally {
-                set({ loading: false });
+                set({ loadingMessages: false });
             }
         }
     },
+
+
 
     deleteChat: (chatId) => {
         set((state) => {

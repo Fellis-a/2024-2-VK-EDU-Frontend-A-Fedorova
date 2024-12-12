@@ -26,10 +26,9 @@ const BurgerMenu = ({ navItems }) => {
     };
 
     return (
-        <div className={styles.burgerMenuContainer}>
+        <div className={styles.burgerMenuContainer} onClick={toggleMenu} >
             <div
                 className={`${styles.hamburger} ${isOpen ? styles.active : ''}`}
-                onClick={toggleMenu}
                 style={{ zIndex: 3 }}
             >
                 <span className={styles.bar}></span>

@@ -16,14 +16,24 @@ const FloatingButton = ({ addChat }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const chatImageRef = useRef(null);
     const { createChat } = useChatStore();
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const loadUsers = async () => {
             try {
+                setLoading(true);
                 const userData = await fetchUsers(tokens.access);
                 setUsers(userData.results);
-            } catch (error) {
-                console.error('Не удалось загрузить пользователей:', error);
+                setFilteredUsers(userData.results);
+                setError(null);
+            } catch (err) {
+                console.error('Ошибка при загрузке пользователей:', err);
+                setError('Не удалось загрузить пользователей');
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -31,6 +41,19 @@ const FloatingButton = ({ addChat }) => {
             loadUsers();
         }
     }, [tokens]);
+
+    const handleSearchChange = (e) => {
+        const query = e.target.value.toLowerCase();
+        setSearchQuery(query);
+
+        // Фильтрация пользователей
+        const filtered = users.filter(user =>
+            user.username.toLowerCase().includes(query) ||
+            user.first_name.toLowerCase().includes(query) ||
+            user.last_name.toLowerCase().includes(query)
+        );
+        setFilteredUsers(filtered);
+    };
 
     const handleCreateChat = async () => {
         if (!tokens || !tokens.access) {
@@ -63,6 +86,7 @@ const FloatingButton = ({ addChat }) => {
             addChat(newChat.title, newChat.avatar, [userId, selectedUser.id], true);
             setIsModalOpen(false);
             setSelectedUser(null);
+            setSearchQuery('');
         } catch (error) {
             console.error('Ошибка при создании чата:', error);
             alert('Не удалось создать чат');
@@ -78,14 +102,14 @@ const FloatingButton = ({ addChat }) => {
 
     return (
         <>
-            <button className={styles.floatingButton} onClick={() => setIsModalOpen(true)}>
+            <button className={styles.floatingButton} aria-label="Создать новый чат" onClick={() => setIsModalOpen(true)}>
                 <EditIcon />
             </button>
             {isModalOpen && (
                 <div className={styles.overlay} onClick={handleOverlayClick}>
                     <div className={styles.modal}>
                         <h2 className={styles.modalTitle}>Создать новый чат</h2>
-                        <select
+                        {/* <select
                             className={styles.modalInput}
                             onChange={(e) => setSelectedUser(users.find(user => user.id === e.target.value))}
                             value={selectedUser ? selectedUser.id : ''}
@@ -96,8 +120,28 @@ const FloatingButton = ({ addChat }) => {
                                     {user.username} ({user.first_name} {user.last_name})
                                 </option>
                             ))}
-                        </select>
+                        </select> */}
 
+                        <input
+                            type="text"
+                            className={styles.modalInput}
+                            placeholder="Введите имя пользователя"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
+                        {loading && <div>Загрузка...</div>}
+                        {error && <div className={styles.error}>{error}</div>}
+                        <div className={styles.userList}>
+                            {filteredUsers.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className={`${styles.userItem} ${selectedUser?.id === user.id ? styles.selectedUser : ''}`}
+                                    onClick={() => setSelectedUser(user)}
+                                >
+                                    {user.username} ({user.first_name} {user.last_name})
+                                </div>
+                            ))}
+                        </div>
                         <input
                             type="file"
                             className={styles.modalInput}
