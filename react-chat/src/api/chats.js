@@ -2,7 +2,7 @@ import { authFetch } from './auth.js';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 20) => {
+export const fetchChats = async (accessToken, search = '', page = 1, pageSize = 100) => {
     try {
         const response = await authFetch(`${BASE_URL}/api/chats/?search=${search}&page=${page}&page_size=${pageSize}`, {
             headers: {
@@ -72,7 +72,22 @@ export const createChatApi = async (chatData, accessToken) => {
             },
             body: JSON.stringify(chatData),
         });
-        if (!response.ok) throw new Error('Не удалось создать чат');
+
+        if (!response.ok) {
+            const errorDetail = await response.json();
+            console.error('Ошибка от сервера при создании чата:', errorDetail);
+
+            if (
+                Array.isArray(errorDetail) &&
+                errorDetail.includes('Private chat with these members already exists')
+            ) {
+                throw new Error('Чат с этим пользователем уже существует.');
+            }
+
+            throw new Error('Не удалось создать чат.');
+        }
+
+
         return response.json();
     } catch (error) {
         console.error('Ошибка при создании чата:', error);
@@ -80,7 +95,7 @@ export const createChatApi = async (chatData, accessToken) => {
     }
 };
 
-export const fetchMessages = async (chatId, accessToken, page = 1, pageSize = 20) => {
+export const fetchMessages = async (chatId, accessToken, page = 1, pageSize = 100) => {
     try {
         const response = await authFetch(
             `${BASE_URL}/api/messages/?chat=${chatId}&page=${page}&page_size=${pageSize}`,

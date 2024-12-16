@@ -49,6 +49,8 @@ const useAuthStore = create(
                 const tokens = get().tokens;
                 if (!tokens?.access) {
                     console.error('No access token available');
+                    set({ tokens: null, currentUser: null });
+                    sessionStorage.removeItem('tokens');
                     return;
                 }
 
@@ -69,6 +71,9 @@ const useAuthStore = create(
                         const newTokens = await get().refreshTokens();
                         if (newTokens) {
                             get().fetchCurrentUser();
+                        } else {
+                            set({ tokens: null, currentUser: null });
+                            sessionStorage.removeItem('tokens');
                         }
                     } else {
                         throw new Error('Failed to fetch user data');
