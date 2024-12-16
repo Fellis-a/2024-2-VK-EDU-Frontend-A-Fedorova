@@ -6,6 +6,7 @@ import { deleteChatApi } from '../../api/chats';
 import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatsListStore';
 import Loader from '../../components/Loader';
+import { authFetch } from '../../api/auth.js';
 
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -32,8 +33,19 @@ const ChatItem = () => {
     const mediaRecorderRef = useRef(null);
     const currentChat = chats.find((chat) => chat.id === chatId);
     const [isDragging, setIsDragging] = useState(false);
-    const [setIsLoading] = useState(false);
     const navigate = useNavigate();
+
+    console.log(currentChat)
+
+    useEffect(() => {
+        if (chatId && tokens?.access) {
+            const chatExists = chats.some(chat => chat.id === chatId);
+            if (!chatExists) {
+                useChatStore.getState().loadChats(tokens);
+            }
+            useChatStore.getState().selectChat(chatId, tokens);
+        }
+    }, [chatId, tokens, chats]);
 
 
     const handleSendMessage = () => {
@@ -41,15 +53,13 @@ const ChatItem = () => {
             console.error('Токен не найден!');
             return;
         }
-        setIsLoading(true);
         try {
             sendMessage(chatId, message.trim(), null, null, tokens?.access);
             setMessage('');
         } catch (error) {
             console.error('Ошибка отправки сообщения:', error);
-        } finally {
-            setIsLoading(false);
         }
+
     };
 
 
@@ -150,7 +160,7 @@ const ChatItem = () => {
         formData.append('voice', file);
 
         try {
-            const response = await fetch(`${BASE_URL}/api/messages/`, {
+            const response = await authFetch(`${BASE_URL}/api/messages/`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${tokens.access}`,
@@ -186,7 +196,7 @@ const ChatItem = () => {
         });
 
         try {
-            const response = await fetch(`${BASE_URL}/api/messages/`, {
+            const response = await authFetch(`${BASE_URL}/api/messages/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${tokens.access}`,

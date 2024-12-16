@@ -7,6 +7,8 @@ import { deleteUserAccount } from '../../api/profile';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader';
+import { toast } from 'react-toastify';
+
 
 
 
@@ -20,7 +22,7 @@ const UserProfile = () => {
     const [username, setUsername] = useState('');
     const [bio, setBio] = useState('');
     const [profileImage, setProfileImage] = useState('');
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [setShowSuccessMessage] = useState(false);
     const [errors, setErrors] = useState({});
     const profileImageRef = useRef(null);
     const navigate = useNavigate();
@@ -90,7 +92,7 @@ const UserProfile = () => {
 
                 const result = await updateUserProfile(id, formData, tokens, refreshTokens);
                 console.log('Результат сохранения:', result);
-                setShowSuccessMessage(true);
+                toast.success('Профиль успешно сохранён!');
                 setTimeout(() => setShowSuccessMessage(false), 3000);
             } catch (error) {
                 console.error('Ошибка сохранения:', error.response || error.message || error);
@@ -117,29 +119,26 @@ const UserProfile = () => {
             ) : (<>
                 <HeaderProfile onSave={handleSave} />
                 <div className={styles.userProfile}>
-                    {showSuccessMessage && <p className={styles.successMessage}>Профиль успешно сохранён!</p>}
                     <div className={styles.profileContent}>
                         <div className={styles.profileImage}>
-                            <img
-                                src={typeof profileImage === 'string' ? profileImage : URL.createObjectURL(profileImage)}
-                                alt="Profile"
-                            />
-                            <div className={styles.fileInputContainer}>
-                                <label htmlFor="profileImage" className={styles.fileInputLabel}>
-                                    Choose File
-                                </label>
-                                <input
-                                    type="file"
-                                    id="profileImage"
-                                    accept="image/*"
-                                    ref={profileImageRef}
-                                    onChange={handleFileChange}
-                                    className={styles.fileInput}
+                            <label htmlFor="profileImage" className={styles.profileImageOverlay}>
+                                <img
+                                    src={typeof profileImage === 'string' ? profileImage : URL.createObjectURL(profileImage)}
+                                    alt="Profile"
+                                    className={styles.profileImagePicture}
                                 />
-
-
-                            </div>
+                                <div className={styles.uploadText}>Загрузить фото</div>
+                            </label>
+                            <input
+                                type="file"
+                                id="profileImage"
+                                accept="image/*"
+                                ref={profileImageRef}
+                                onChange={handleFileChange}
+                                className={styles.fileInput}
+                            />
                         </div>
+
 
                         <label className={styles.label} htmlFor="firstName">Имя <span className={styles.required}>*</span></label>
                         <input

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { loginUser } from '../../api/auth';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageLogin.module.scss';
@@ -13,7 +13,7 @@ function Login() {
         password: ''
     });
 
-    const { setTokens, fetchCurrentUser } = useAuthStore();
+    const { setTokens, fetchCurrentUser, tokens } = useAuthStore();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -58,6 +58,16 @@ function Login() {
             }
         }
     };
+
+    const isTokenValid = () => {
+        if (!tokens?.access) return false;
+        const { exp } = JSON.parse(atob(tokens.access.split('.')[1]));
+        return Date.now() < exp * 1000;
+    };
+
+    if (isTokenValid()) {
+        return <Navigate to="/" replace />;
+    }
 
 
     return (
