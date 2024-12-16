@@ -40,13 +40,17 @@ const ChatItem = () => {
 
     useEffect(() => {
         if (chatId && tokens?.access) {
-            const chatExists = chats.some(chat => chat.id === chatId);
-            if (!chatExists) {
-                useChatStore.getState().loadChats(tokens);
+            const isCurrentChatSelected = useChatStore.getState().selectedChat?.id === chatId;
+            if (!isCurrentChatSelected) {
+                const chatExists = chats.some(chat => chat.id === chatId);
+                if (!chatExists) {
+                    useChatStore.getState().loadChats(tokens);
+                }
+                useChatStore.getState().selectChat(chatId, tokens);
             }
-            useChatStore.getState().selectChat(chatId, tokens);
         }
     }, [chatId, tokens, chats]);
+
 
     const handleSendMessage = useCallback(() => {
         if (!tokens?.access) {

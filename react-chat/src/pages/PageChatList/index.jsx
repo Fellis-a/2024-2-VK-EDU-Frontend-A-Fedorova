@@ -110,7 +110,7 @@ const ChatList = () => {
                                 </div>
                                 <div className={styles.chatTime}>
                                     <span
-                                        title={`Дата: ${chat.lastMessageDate || 'Неизвестно'}, Время: ${chat.lastMessageTime || ''}`}
+                                        title={`Дата: ${chat.last_message?.created_at ? new Date(chat.last_message.created_at).toISOString().split('T')[0] : 'Неизвестно'}, Время: ${chat.lastMessageTime || ''}`}
                                     >
                                         {chat.lastMessageTime || ''}
                                     </span>

@@ -16,41 +16,28 @@ const useChatStore = create((set, get) => ({
         set({ loading: true });
         try {
             const data = await fetchChats(tokens.access);
-            console.log('Загруженные чаты:', data);
-            const chatsWithLastMessages = await Promise.all(
-                data.results.map(async (chat) => {
-                    const messagesData = await fetchMessages(chat.id, tokens.access);
-                    const sortedMessages = (messagesData.results || []).sort(
-                        (a, b) => new Date(a.created_at) - new Date(b.created_at)
-                    );
-                    const lastMessage = sortedMessages[sortedMessages.length - 1];
-
-                    return {
-                        ...chat,
-                        avatar: chat.avatar,
-                        lastMessage: lastMessage
-                            ? lastMessage.text ||
-                            (lastMessage.voice ? '[Голосовое сообщение]' : '') ||
-                            (lastMessage.files?.length ? '[Изображение]' : 'Нет сообщений')
-                            : 'Нет сообщений',
-                        lastMessageTime: lastMessage
-                            ? new Date(lastMessage.created_at).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })
-                            : '',
-                    };
-                })
-            );
+            const chatsWithLastMessages = data.results.map((chat) => ({
+                ...chat,
+                lastMessage: chat.last_message
+                    ? chat.last_message.text ||
+                    (chat.last_message.voice ? '[Голосовое сообщение]' : '') ||
+                    (chat.last_message.files?.length ? '[Изображение]' : 'Нет сообщений')
+                    : 'Нет сообщений',
+                lastMessageTime: chat.last_message
+                    ? new Date(chat.last_message.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    })
+                    : '',
+            }));
             set({ chats: chatsWithLastMessages });
         } catch (error) {
-            console.error('Failed to load chats:', error);
+            console.error('Ошибка загрузки чатов:', error);
             set({ chats: [] });
         } finally {
             set({ loading: false });
         }
     },
-
 
     selectChat: async (chatId, { access }) => {
         set({ loadingMessages: true });
