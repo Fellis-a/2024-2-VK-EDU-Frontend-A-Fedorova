@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { loginUser } from '../../api/auth';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageLogin.module.scss';
@@ -13,7 +13,8 @@ function Login() {
         password: ''
     });
 
-    const { setTokens, fetchCurrentUser, tokens } = useAuthStore();
+    const { setTokens, fetchCurrentUser } = useAuthStore();
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -26,6 +27,7 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
 
             const tokens = await loginUser(credentials);
@@ -56,19 +58,10 @@ function Login() {
             } else {
                 toast.error('Ошибка входа. Попробуйте еще раз.');
             }
+        } finally {
+            setLoading(false);
         }
     };
-
-    const isTokenValid = () => {
-        if (!tokens?.access) return false;
-        const { exp } = JSON.parse(atob(tokens.access.split('.')[1]));
-        return Date.now() < exp * 1000;
-    };
-
-    if (isTokenValid()) {
-        return <Navigate to="/" replace />;
-    }
-
 
     return (
         <div className={styles.authPageContainer}>
@@ -92,7 +85,12 @@ function Login() {
                     required
                     className={styles.authInput}
                 />
-                <button type="submit" className={styles.authButton}>Login</button>
+                <button type="submit" className={styles.authButton} disabled={loading} >
+                    {loading ? (
+                        <div className={styles.loader}></div>
+                    ) : (
+                        'Login'
+                    )}</button>
             </form>
             <p className={styles.authLink}>
                 Не зарегистрированы? <Link to="/register">Зарегистрироваться</Link>

@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styles from './FloatingButton.module.scss';
 import EditIcon from '@mui/icons-material/Edit';
-import { fetchUsers } from '../../api/users';
+import { fetchAllUsers } from '../../api/users';
 import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatsListStore';
+import { toast } from 'react-toastify';
 
 const FloatingButton = ({ addChat }) => {
     const { tokens } = useAuthStore();
@@ -15,22 +16,46 @@ const FloatingButton = ({ addChat }) => {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const chatImageRef = useRef(null);
-    const { createChat } = useChatStore();
+    const { createChat, chats } = useChatStore();
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const loadUsers = async () => {
             try {
-                const userData = await fetchUsers(tokens.access);
-                setUsers(userData.results);
-            } catch (error) {
-                console.error('Не удалось загрузить пользователей:', error);
+                setLoading(true);
+                const allUsers = await fetchAllUsers(tokens.access);
+                setUsers(allUsers);
+                setFilteredUsers(allUsers);
+                setError(null);
+            } catch (err) {
+                console.error('Ошибка при загрузке пользователей:', err);
+                setError('Не удалось загрузить пользователей');
+            } finally {
+                setLoading(false);
             }
         };
 
         if (tokens?.access) {
             loadUsers();
         }
-    }, [tokens]);
+    }, [tokens, chats]);
+
+    useEffect(() => {
+        const filtered = users.filter(user =>
+            user.username.toLowerCase().includes(searchQuery) ||
+            user.first_name.toLowerCase().includes(searchQuery) ||
+            user.last_name.toLowerCase().includes(searchQuery)
+        );
+        setFilteredUsers(filtered);
+    }, [searchQuery, users]);
+
+    const handleSearchChange = (e) => {
+        const query = e.target.value.toLowerCase();
+        setSearchQuery(query);
+    };
 
     const handleCreateChat = async () => {
         if (!tokens || !tokens.access) {
@@ -63,9 +88,13 @@ const FloatingButton = ({ addChat }) => {
             addChat(newChat.title, newChat.avatar, [userId, selectedUser.id], true);
             setIsModalOpen(false);
             setSelectedUser(null);
+            setSearchQuery('');
         } catch (error) {
-            console.error('Ошибка при создании чата:', error);
-            alert('Не удалось создать чат');
+            if (error.message === 'Чат с этим пользователем уже существует.') {
+                toast.warning('Чат с этим пользователем уже существует.');
+            } else {
+                toast.error('Не удалось создать чат. Попробуйте позже.');
+            }
         }
     };
 
@@ -78,14 +107,14 @@ const FloatingButton = ({ addChat }) => {
 
     return (
         <>
-            <button className={styles.floatingButton} onClick={() => setIsModalOpen(true)}>
+            <button className={styles.floatingButton} aria-label="Создать новый чат" onClick={() => setIsModalOpen(true)}>
                 <EditIcon />
             </button>
             {isModalOpen && (
                 <div className={styles.overlay} onClick={handleOverlayClick}>
                     <div className={styles.modal}>
                         <h2 className={styles.modalTitle}>Создать новый чат</h2>
-                        <select
+                        {/* <select
                             className={styles.modalInput}
                             onChange={(e) => setSelectedUser(users.find(user => user.id === e.target.value))}
                             value={selectedUser ? selectedUser.id : ''}
@@ -96,8 +125,28 @@ const FloatingButton = ({ addChat }) => {
                                     {user.username} ({user.first_name} {user.last_name})
                                 </option>
                             ))}
-                        </select>
+                        </select> */}
 
+                        <input
+                            type="text"
+                            className={styles.modalInput}
+                            placeholder="Введите имя пользователя"
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
+                        {loading && <div>Загрузка...</div>}
+                        {error && <div className={styles.error}>{error}</div>}
+                        <div className={styles.userList}>
+                            {filteredUsers.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className={`${styles.userItem} ${selectedUser?.id === user.id ? styles.selectedUser : ''}`}
+                                    onClick={() => setSelectedUser(user)}
+                                >
+                                    {user.username} ({user.first_name} {user.last_name})
+                                </div>
+                            ))}
+                        </div>
                         <input
                             type="file"
                             className={styles.modalInput}

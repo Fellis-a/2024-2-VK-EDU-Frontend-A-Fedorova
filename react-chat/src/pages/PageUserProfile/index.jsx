@@ -54,7 +54,7 @@ const UserProfile = () => {
                 await deleteUserAccount(id, tokens, refreshTokens);
                 alert('Ваш аккаунт был успешно удалён. Вы будете перенаправлены на главную страницу.');
                 setTokens(null);
-                localStorage.removeItem('tokens');
+                sessionStorage.removeItem('tokens');
                 navigate('/login');
             } catch (error) {
                 console.error('Ошибка при удалении аккаунта:', error);

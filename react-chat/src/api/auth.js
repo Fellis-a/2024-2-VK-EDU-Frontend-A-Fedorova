@@ -63,7 +63,7 @@ export async function loginUser(credentials) {
         const data = await response.json();
         console.log('Login response:', data);
         const tokens = { ...data, userId: data.user_id };
-        localStorage.setItem('tokens', JSON.stringify(tokens));
+        sessionStorage.setItem('tokens', JSON.stringify(tokens));
 
         if (!data.user_id) {
             const userResponse = await fetch(`${BASE_URL}/api/user/current/`, {
@@ -77,7 +77,7 @@ export async function loginUser(credentials) {
             if (userResponse.ok) {
                 const user = await userResponse.json();
                 tokens.userId = user.id;
-                localStorage.setItem('tokens', JSON.stringify(tokens));
+                sessionStorage.setItem('tokens', JSON.stringify(tokens));
                 console.log('User data fetched:', user);
             } else {
                 console.error('Failed to fetch user data');

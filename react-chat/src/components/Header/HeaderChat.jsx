@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
-// import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import styles from './Header.module.scss';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link } from 'react-router-dom';
+import LazyImage from '../../components/LazyImage';
 
 const HeaderChat = ({ title, avatarUrl, onDeleteChat }) => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -35,7 +35,8 @@ const HeaderChat = ({ title, avatarUrl, onDeleteChat }) => {
                     <ArrowBackIosNewIcon />
                 </Link>
                 {avatarUrl ? (
-                    <img src={avatarUrl} alt={title} className={styles.chatAvatar} />
+                    <LazyImage className={styles.chatAvatar} src={avatarUrl} alt={`Аватар пользователя ${title}`} />
+
                 ) : (
                     <div className={styles.initials}>
                         {getInitials(title)}

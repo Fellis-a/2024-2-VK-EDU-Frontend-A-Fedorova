@@ -20,7 +20,10 @@ const useAuthStore = create(
                 }
             },
 
-            setCurrentUser: (user) => set({ currentUser: user }),
+            setCurrentUser: (user) => {
+                set({ currentUser: user, chats: [] });
+                get().loadChats(user.tokens);
+            },
 
             refreshTokens: async () => {
                 if (get().refreshing) return;
@@ -36,7 +39,7 @@ const useAuthStore = create(
                 } catch (error) {
                     console.error('Token refresh failed:', error);
                     set({ tokens: null });
-                    localStorage.removeItem('tokens');
+                    sessionStorage.removeItem('tokens');
                 } finally {
                     set({ refreshing: false });
                 }
@@ -46,6 +49,8 @@ const useAuthStore = create(
                 const tokens = get().tokens;
                 if (!tokens?.access) {
                     console.error('No access token available');
+                    set({ tokens: null, currentUser: null });
+                    sessionStorage.removeItem('tokens');
                     return;
                 }
 
@@ -66,6 +71,9 @@ const useAuthStore = create(
                         const newTokens = await get().refreshTokens();
                         if (newTokens) {
                             get().fetchCurrentUser();
+                        } else {
+                            set({ tokens: null, currentUser: null });
+                            sessionStorage.removeItem('tokens');
                         }
                     } else {
                         throw new Error('Failed to fetch user data');
@@ -82,11 +90,17 @@ const useAuthStore = create(
 
             clearTokens: () => {
                 set({ tokens: null, currentUser: null });
-                localStorage.removeItem('tokens');
+
+                sessionStorage.removeItem('tokens');
+                sessionStorage.removeItem('auth-storage');
             },
         }),
         {
             name: 'auth-storage',
+            getStorage: () => {
+                console.log('Using sessionStorage');
+                return sessionStorage;
+            },
         }
     )
 );
