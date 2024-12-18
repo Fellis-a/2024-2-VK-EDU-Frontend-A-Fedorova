@@ -152,7 +152,7 @@ const ChatItem = () => {
         }
     };
 
-    const handleSendVoice = async () => {
+    const handleSendVoice = useCallback(async () => {
         if (!voiceBlob || !tokens?.access) return;
         const mimeType = getSupportedMimeType();
         const file = new File([voiceBlob], 'recording.ogg', { type: mimeType });
@@ -183,7 +183,8 @@ const ChatItem = () => {
         } catch (error) {
             console.error('Ошибка при отправке голосового сообщения:', error);
         }
-    };
+    }, [voiceBlob, chatId, tokens]);
+
     const handleFileUpload = async (files, message = '') => {
         if (!tokens?.access) {
             console.error('Токен не найден');
@@ -298,7 +299,7 @@ const ChatItem = () => {
         if (voiceBlob) {
             handleSendVoice();
         }
-    }, [voiceBlob]);
+    }, [voiceBlob, handleSendVoice]);
 
 
     if (loading || refreshing || !tokens || loadingMessages) {
