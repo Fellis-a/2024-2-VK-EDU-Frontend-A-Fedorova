@@ -3,6 +3,7 @@ node_modules/
 build/
 dist/
 vk-edu-messenger-backend/
+/react-chat/ts/utils/*.js
 
 /.vite/
 

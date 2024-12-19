@@ -3,6 +3,7 @@ import { registerUser } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageRegister.module.scss';
 import { toast } from 'react-toastify';
+import { translate } from '../../../ts/utils/translate';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -42,28 +43,29 @@ function Register() {
             console.error('Error during registration:', error);
 
             if (error.details && typeof error.details === 'object') {
-                Object.entries(error.details).forEach(([field, messages]) => {
-                    if (Array.isArray(messages)) {
-                        messages.forEach((message) => {
-                            const formattedField = formatFieldName(field);
-                            toast.error(`${formattedField}: ${message}`);
-                        });
-                    } else {
-                        const formattedField = formatFieldName(field);
-                        toast.error(`${formattedField}: ${messages}`);
-                    }
-                });
+                if (error.details.detail) {
+                    const translatedMessage = await translate({ text: error.details.detail, fromLanguage: 'en', toLanguage: 'ru' });
+                    toast.error(translatedMessage);
+                } else {
+                    Object.entries(error.details).forEach(async ([field, messages]) => {
+                        if (Array.isArray(messages)) {
+                            for (const message of messages) {
+                                const translatedMessage = await translate({ text: message, fromLanguage: 'en', toLanguage: 'ru' });
+                                toast.error(`${field}: ${translatedMessage}`);
+                            }
+                        } else {
+                            const translatedMessage = await translate({ text: messages, fromLanguage: 'en', toLanguage: 'ru' });
+                            toast.error(`${field}: ${translatedMessage}`);
+                        }
+                    });
+                }
             } else if (error.details) {
-                toast.error(error.details);
+                const translatedMessage = await translate(error.details, 'en', 'ru');
+                toast.error(translatedMessage);
             } else {
                 toast.error('Ошибка регистрации! Попробуйте еще раз.');
             }
         }
-    };
-
-    const formatFieldName = (field) => {
-        const formatted = field.replace(/_/g, ' ');
-        return formatted.charAt(0).toUpperCase() + formatted.slice(1);
     };
 
 
