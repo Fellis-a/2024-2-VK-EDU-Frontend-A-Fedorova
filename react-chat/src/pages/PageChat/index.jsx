@@ -9,6 +9,7 @@ import Loader from '../../components/Loader';
 import { authFetch } from '../../api/auth.js';
 import LazyImage from '../../components/LazyImage';
 
+
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -152,7 +153,7 @@ const ChatItem = () => {
         }
     };
 
-    const handleSendVoice = async () => {
+    const handleSendVoice = useCallback(async () => {
         if (!voiceBlob || !tokens?.access) return;
         const mimeType = getSupportedMimeType();
         const file = new File([voiceBlob], 'recording.ogg', { type: mimeType });
@@ -183,7 +184,8 @@ const ChatItem = () => {
         } catch (error) {
             console.error('Ошибка при отправке голосового сообщения:', error);
         }
-    };
+    }, [voiceBlob, chatId, tokens]);
+
     const handleFileUpload = async (files, message = '') => {
         if (!tokens?.access) {
             console.error('Токен не найден');
@@ -298,7 +300,7 @@ const ChatItem = () => {
         if (voiceBlob) {
             handleSendVoice();
         }
-    }, [voiceBlob]);
+    }, [voiceBlob, handleSendVoice]);
 
 
     if (loading || refreshing || !tokens || loadingMessages) {

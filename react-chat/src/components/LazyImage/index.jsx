@@ -17,12 +17,13 @@ const LazyImage = ({ src, alt, className }) => {
             { root: null, rootMargin: '0px', threshold: 0.1 }
         );
 
-        if (imgRef.current) {
-            observer.observe(imgRef.current);
+        const currentImage = imgRef.current;
+        if (currentImage) {
+            observer.observe(currentImage);
         }
 
         return () => {
-            if (imgRef.current) observer.unobserve(imgRef.current);
+            if (currentImage) observer.unobserve(currentImage);
         };
     }, []);
 
