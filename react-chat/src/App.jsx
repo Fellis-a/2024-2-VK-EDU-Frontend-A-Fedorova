@@ -33,14 +33,14 @@ const App = () => {
   useEffect(() => {
     const interval = setInterval(refreshTokens, 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshTokens]);
 
 
   useEffect(() => {
     if (tokens && !currentUser) {
       fetchCurrentUser();
     }
-  }, [tokens, currentUser]);
+  }, [tokens, currentUser, fetchCurrentUser]);
 
   useEffect(() => {
     if (tokens && currentUser?.id) {
@@ -50,7 +50,7 @@ const App = () => {
         unsubscribeFromChannel();
       };
     }
-  }, [tokens, currentUser?.id]);
+  }, [tokens, currentUser?.id, subscribeToChannel, unsubscribeFromChannel]);
 
   const handleCreateChat = useCallback((chatName, chatImage) => {
     createChat(chatName, chatImage);
