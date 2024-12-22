@@ -5,6 +5,7 @@ import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import styles from './PageLogin.module.scss';
 import { toast } from 'react-toastify';
+import { translate } from '../../../ts/utils/translate';
 
 
 function Login() {
@@ -41,20 +42,24 @@ function Login() {
 
             if (error.details && typeof error.details === 'object') {
                 if (error.details.detail) {
-                    toast.error(error.details.detail);
+                    const translatedMessage = await translate({ text: error.details.detail, fromLanguage: 'en', toLanguage: 'ru' });
+                    toast.error(translatedMessage);
                 } else {
-                    Object.entries(error.details).forEach(([field, messages]) => {
+                    Object.entries(error.details).forEach(async ([field, messages]) => {
                         if (Array.isArray(messages)) {
-                            messages.forEach((message) => {
-                                toast.error(`${field}: ${message}`);
-                            });
+                            for (const message of messages) {
+                                const translatedMessage = await translate({ text: message, fromLanguage: 'en', toLanguage: 'ru' });
+                                toast.error(`${field}: ${translatedMessage}`);
+                            }
                         } else {
-                            toast.error(`${field}: ${messages}`);
+                            const translatedMessage = await translate({ text: messages, fromLanguage: 'en', toLanguage: 'ru' });
+                            toast.error(`${field}: ${translatedMessage}`);
                         }
                     });
                 }
             } else if (error.details) {
-                toast.error(error.details);
+                const translatedMessage = await translate(error.details, 'en', 'ru');
+                toast.error(translatedMessage);
             } else {
                 toast.error('Ошибка входа. Попробуйте еще раз.');
             }
