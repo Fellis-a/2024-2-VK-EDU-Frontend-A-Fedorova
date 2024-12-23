@@ -1,0 +1,34 @@
+.historyContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 20px;
+}
+
+.historyItem {
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #121212;
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+}
+
+.historyItem p {
+    margin: 5px 0;
+}
+
+.clearHistoryButton {
+    padding: 10px 20px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+.clearHistoryButton:hover {
+    background-color: #e60000;
+}

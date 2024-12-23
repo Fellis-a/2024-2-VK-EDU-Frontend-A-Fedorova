@@ -11,6 +11,7 @@ interface Translation {
 interface TranslationStore {
     history: Translation[];
     addTranslation: (translation: Translation) => void;
+    clearHistory: () => void;
 }
 
 export const useTranslationStore = create<TranslationStore>((set) => ({
@@ -21,5 +22,9 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
             localStorage.setItem('translationHistory', JSON.stringify(updatedHistory));
             return { history: updatedHistory };
         });
+    },
+    clearHistory: () => {
+        set({ history: [] });
+        localStorage.setItem('translationHistory', JSON.stringify([]));
     },
 }));

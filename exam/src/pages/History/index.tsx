@@ -1,8 +1,10 @@
 import React from 'react';
 import { useTranslationStore } from '../../store/useStore';
+import styles from './History.module.scss';
 
 const History: React.FC = () => {
     const history = useTranslationStore((state) => state.history);
+    const clearHistory = useTranslationStore((state) => state.clearHistory);
 
     return (
         <div>
@@ -10,17 +12,18 @@ const History: React.FC = () => {
             {history.length === 0 ? (
                 <p>Нет переводов</p>
             ) : (
-                <ul>
+                <div className={styles.historyContainer}>
                     {history.map((item, index) => (
-                        <li key={index}>
-                            <p>Текст: {item.text}</p>
-                            <p>Перевод: {item.translatedText}</p>
-                            <p>Язык: {item.targetLang}</p>
-                            <p>Дата: {new Date(item.date).toLocaleString()}</p>
-                        </li>
+                        <div key={index} className={styles.historyItem}>
+                            <p><strong>Текст:</strong> {item.text}</p>
+                            <p><strong>Перевод:</strong> {item.translatedText}</p>
+                            <p><strong>Язык:</strong> {item.targetLang}</p>
+                            <p><strong>Дата:</strong> {new Date(item.date).toLocaleString()}</p>
+                        </div>
                     ))}
-                </ul>
+                </div>
             )}
+            <button className={styles.clearHistoryButton} onClick={clearHistory}>Очистить историю</button>
         </div>
     );
 };

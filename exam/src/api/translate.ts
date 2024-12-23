@@ -1,7 +1,6 @@
-export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+export const translateText = async (text: string, targetLang: string): Promise<string> => {
     const baseUrl = 'https://api.mymemory.translated.net/get';
-
-    const url = `${baseUrl}?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(`${sourceLang}|${targetLang}`)}`;
+    const url = `${baseUrl}?q=${encodeURIComponent(text)}&langpair=Autodetect|${encodeURIComponent(targetLang)}`;
 
     try {
         const response = await fetch(url, {
