@@ -1,18 +1,9 @@
 .homeContainer {
-
     padding-top: 20px;
-    margin: 0 auto;
+
     font-family: 'Roboto', sans-serif;
-
-}
-
-.historyOverlay {
-    display: none;
-
-    &.visible {
-        display: block;
-        animation: fadeIn 0.3s ease-in-out;
-    }
+    display: flex;
+    flex-direction: column;
 }
 
 .homeMainContainer {
@@ -146,6 +137,11 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
+    cursor: pointer;
+}
+
+.translateButton:hover {
+    color: #b9b7b7;
 }
 
 @media (max-width: 768px) {
@@ -176,37 +172,4 @@
         min-height: 200px;
         background-color: #ffffff;
     }
-}
-
-.history {
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background-color: #ffffff;
-    color: #6d7175;
-    border: none;
-    width: 100px;
-
-    .icon {
-        font-size: 40px;
-    }
-
-    span {
-        font-size: 14px;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-}
-
-.historyIcon {
-    border-radius: 50%;
-    border: solid #ccc 1px;
-    width: 70px;
-    height: 70px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
 }
